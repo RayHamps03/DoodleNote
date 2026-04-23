@@ -28,9 +28,13 @@ else
         @foreach (var note in Model.Notes)
         {
             <tr>
-                <td>@note.NoteTitle</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@note.NoteId">@note.NoteTitle</a>
+                </td>
                 <td>@note.CreatedDate.ToString("yyyy-MM-dd")</td>
-                <td></td>
+                <td>
+                    <a class="btn btn-sm btn-warning" asp-action="Edit" asp-route-id="@note.NoteId">Edit</a>
+                </td>
             </tr>
         }
         </tbody>
