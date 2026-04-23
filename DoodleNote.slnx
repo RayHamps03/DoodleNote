@@ -3,5 +3,6 @@
     <File Path=".editorconfig" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="DoodleNote.Tests/DoodleNote.Tests.csproj" />
   <Project Path="DoodleNote/DoodleNote.csproj" />
 </Solution>
