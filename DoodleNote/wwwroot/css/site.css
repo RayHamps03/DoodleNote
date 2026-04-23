@@ -8,6 +8,20 @@ html {
   }
 }
 
+
+/* Brighter green for Create Note button */
+.btn-bright-green {
+  background-color: #1ec943 !important;
+  border-color: #1ec943 !important;
+  color: #fff !important;
+}
+
+.btn-bright-green:hover, .btn-bright-green:focus {
+  background-color: #189e34 !important;
+  border-color: #189e34 !important;
+  color: #fff !important;
+}
+
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }

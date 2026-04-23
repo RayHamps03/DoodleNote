@@ -1,0 +1,57 @@
+@model DoodleNoteListViewModel
+
+@{
+    ViewData["Title"] = "Doodle Notes";
+}
+
+<h1>Doodle Notes</h1>
+
+<p>
+    <a class="btn btn-bright-green" asp-action="Create">Create Note</a>
+</p>
+
+@if (!Model.Notes.Any())
+{
+    <p>No doodle notes found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Date Created</th>
+                <th>Creator</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var note in Model.Notes)
+        {
+            <tr>
+                <td>@note.NoteTitle</td>
+                <td>@note.CreatedDate.ToString("yyyy-MM-dd")</td>
+                <td></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <nav aria-label="Doodle notes pagination">
+        <ul class="pagination">
+            <li class="page-item @(Model.HasPreviousPage ? string.Empty : "disabled")">
+                <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)">Previous</a>
+            </li>
+
+            @for (var i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : string.Empty)">
+                    <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(Model.HasNextPage ? string.Empty : "disabled")">
+                <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+}
