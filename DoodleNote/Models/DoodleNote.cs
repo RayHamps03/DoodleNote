@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace DoodleNote.Models;
 
 /// <summary>
-/// Represents a doodle note with a title, creation date, Creator, and Invitees.
+/// Represents a doodle note with a title, creation date, Creator, Invitees, and description.
 /// </summary>
 public class DoodleNote
 {
@@ -36,4 +36,10 @@ public class DoodleNote
 		get => _createdDate;
 		set => _createdDate = value.Date;
 	}
+
+	/// <summary>
+	/// The description of the doodle note.
+	/// </summary>
+	[StringLength(300, ErrorMessage = "Description cannot exceed 300 characters.")]
+	public string? Description { get; set; }
 }

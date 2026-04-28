@@ -1,0 +1,27 @@
+@model DoodleNoteDetailsViewModel
+@{
+    ViewData["Title"] = Model.NoteTitle;
+}
+
+<h1>@Model.NoteTitle</h1>
+<div class="mb-2 text-muted">Created: @Model.CreatedDate.ToString("yyyy-MM-dd")</div>
+<div class="mb-2"><strong>Author:</strong> @Model.Author</div>
+
+<div class="mb-4">
+    <label class="form-label d-block">Note Canvas</label>
+    <div id="note-canvas" style="min-height: 260px; border: 1px solid #ced4da; border-radius: 0.375rem; background-color: #f8f9fa; box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15);"></div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Description</label>
+    <div id="note-description" class="form-control" style="min-height: 80px; background: #f8f9fa;">@Model.Description</div>
+</div>
+
+<a class="btn btn-secondary" asp-action="Index">Back to List</a>
+
+@section Scripts {
+    <script>
+        // Placeholder for future canvas JS logic
+        // Example: document.getElementById('note-canvas').innerText = 'Canvas UI goes here';
+    </script>
+}
