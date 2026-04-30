@@ -29,43 +29,45 @@
     <canvas id="canvas" width="800" height="500"></canvas>
 
     <!-- Fabric canvas -->
-    <script>
-    const canvas = new fabric.Canvas('canvas');
+    @section Scripts{
+        <script>
+        const canvas = new fabric.Canvas('canvas');
 
-    // Enable free drawing (pencil)
-    canvas.isDrawingMode = true;
-    canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+        // Enable free drawing (pencil)
+        canvas.isDrawingMode = true;
+        canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
 
-    const pencilColor = document.getElementById('pencilColor');
-    const pencilSize = document.getElementById('pencilSize');
-    const pencilSizeValue = document.getElementById('pencilSizeValue');
-    const toggleDrawing = document.getElementById('toggleDrawing');
-    const clearCanvas = document.getElementById('clearCanvas');
-    const isDrawingMode = document.getElementById('isDrawingMode');
+        const pencilColor = document.getElementById('pencilColor');
+        const pencilSize = document.getElementById('pencilSize');
+        const pencilSizeValue = document.getElementById('pencilSizeValue');
+        const toggleDrawing = document.getElementById('toggleDrawing');
+        const clearCanvas = document.getElementById('clearCanvas');
+        const isDrawingMode = document.getElementById('isDrawingMode');
 
-    function applyBrushSettings() {
-        if (!canvas.freeDrawingBrush) return;
-        canvas.freeDrawingBrush.color = pencilColor.value;
-        canvas.freeDrawingBrush.width = parseInt(pencilSize.value, 10) || 1;
-        pencilSizeValue.textContent = canvas.freeDrawingBrush.width;
+        function applyBrushSettings() {
+            if (!canvas.freeDrawingBrush) return;
+            canvas.freeDrawingBrush.color = pencilColor.value;
+            canvas.freeDrawingBrush.width = parseInt(pencilSize.value, 10) || 1;
+            pencilSizeValue.textContent = canvas.freeDrawingBrush.width;
+        }
+
+        applyBrushSettings();
+
+        pencilColor.addEventListener('input', applyBrushSettings);
+        pencilSize.addEventListener('input', applyBrushSettings);
+        toggleDrawing.addEventListener('change', () => {
+            canvas.isDrawingMode = toggleDrawing.checked;
+        });
+        clearCanvas.addEventListener('click', () => {
+            canvas.clear();
+            canvas.requestRenderAll();
+        });
+
+        // Toggle drawing mode button logic
+        isDrawingMode.addEventListener('click', () => {
+            canvas.isDrawingMode = !canvas.isDrawingMode;
+        });
+
+        </script>
     }
-
-    applyBrushSettings();
-
-    pencilColor.addEventListener('input', applyBrushSettings);
-    pencilSize.addEventListener('input', applyBrushSettings);
-    toggleDrawing.addEventListener('change', () => {
-        canvas.isDrawingMode = toggleDrawing.checked;
-    });
-    clearCanvas.addEventListener('click', () => {
-        canvas.clear();
-        canvas.requestRenderAll();
-    });
-
-    // Toggle drawing mode button logic
-    isDrawingMode.addEventListener('click', () => {
-        canvas.isDrawingMode = !canvas.isDrawingMode;
-    });
-
-    </script>
 </div>
