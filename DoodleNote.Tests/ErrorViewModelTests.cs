@@ -8,15 +8,15 @@ public class ErrorViewModelTests
     [Fact]
     public void ShowRequestId_ReturnsTrue_WhenRequestIdIsNotNullOrEmpty()
     {
-        var model = new ErrorViewModel { RequestId = "abc" };
+        ErrorViewModel model = new ErrorViewModel { RequestId = "abc" };
         Assert.True(model.ShowRequestId);
     }
 
     [Fact]
     public void ShowRequestId_ReturnsFalse_WhenRequestIdIsNullOrEmpty()
     {
-        var model1 = new ErrorViewModel { RequestId = null };
-        var model2 = new ErrorViewModel { RequestId = string.Empty };
+        ErrorViewModel model1 = new ErrorViewModel { RequestId = null };
+        ErrorViewModel model2 = new ErrorViewModel { RequestId = string.Empty };
         Assert.False(model1.ShowRequestId);
         Assert.False(model2.ShowRequestId);
     }
