@@ -22,4 +22,19 @@
     <Folder Include="Views\Account\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include=".md Files\ACCOUNT_IMPLEMENTATION_DETAILS.md" />
+    <None Include=".md Files\ARCHITECTURE_DIAGRAMS.md" />
+    <None Include=".md Files\FINAL_SUMMARY.md" />
+    <None Include=".md Files\IMPLEMENTATION_COMPLETE.md" />
+    <None Include=".md Files\MASTER_INDEX.md" />
+    <None Include=".md Files\OWNER_ACCOUNT_SETUP.md" />
+    <None Include=".md Files\QUICK_REFERENCE.md" />
+    <None Include=".md Files\QUICK_TEST_GUIDE.md" />
+    <None Include=".md Files\README_ACCOUNT_IMPLEMENTATION.md" />
+    <None Include=".md Files\TEST_SUITE_DOCUMENTATION.md" />
+    <None Include=".md Files\TEST_SUMMARY.md" />
+    <None Include=".md Files\VERIFICATION_AND_STATUS.md" />
+  </ItemGroup>
+
 </Project>
