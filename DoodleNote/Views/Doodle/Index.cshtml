@@ -1,1 +1,89 @@
-﻿
+﻿@{
+    ViewData["Title"] = "Doodle";
+}
+
+<h1>Doodle</h1>
+
+<p class="text-muted">Draw on the canvas below.</p>
+
+<div class="border rounded" style="width: 100%; height: 70vh; overflow: hidden;">
+    <canvas id="doodleCanvas" style="width: 100%; height: 100%; touch-action: none;"></canvas>
+</div>
+
+<div class="mt-2 d-flex gap-2">
+    <button type="button" id="toggleEraserBtn" class="btn btn-outline-secondary" aria-pressed="false">Eraser</button>
+</div>
+
+@section Scripts
+{
+    <script>
+        (function () {
+            const canvas = document.getElementById('doodleCanvas');
+            if (!canvas || !window.paper) {
+                return;
+            }
+
+            // Match the backing store size to the element size for crisp drawing.
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+                canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+                canvas.getContext('2d')?.scale(dpr, dpr);
+            }
+
+            resizeCanvas();
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                paper.view.viewSize = new paper.Size(canvas.clientWidth, canvas.clientHeight);
+            });
+
+            paper.setup(canvas);
+
+            const tool = new paper.Tool();
+            let path;
+            let isEraserMode = false;
+
+            const toggleEraserBtn = document.getElementById('toggleEraserBtn');
+            const penStrokeWidth = 3;
+            const eraserStrokeWidth = 24;
+
+            function updateEraserButton() {
+                if (!toggleEraserBtn) {
+                    return;
+                }
+
+                toggleEraserBtn.setAttribute('aria-pressed', String(isEraserMode));
+                toggleEraserBtn.classList.toggle('btn-outline-secondary', !isEraserMode);
+                toggleEraserBtn.classList.toggle('btn-secondary', isEraserMode);
+                toggleEraserBtn.textContent = isEraserMode ? 'Eraser (On)' : 'Eraser';
+            }
+
+            if (toggleEraserBtn) {
+                toggleEraserBtn.addEventListener('click', () => {
+                    isEraserMode = !isEraserMode;
+                    updateEraserButton();
+                });
+                updateEraserButton();
+            }
+
+            tool.onMouseDown = function (event) {
+                path = new paper.Path({
+                    strokeColor: 'black',
+                    strokeWidth: isEraserMode ? eraserStrokeWidth : penStrokeWidth,
+                    strokeCap: 'round',
+                    strokeJoin: 'round',
+                    blendMode: isEraserMode ? 'destination-out' : 'source-over'
+                });
+                path.add(event.point);
+            };
+
+            tool.onMouseDrag = function (event) {
+                if (!path) {
+                    return;
+                }
+                path.add(event.point);
+            };
+        })();
+    </script>
+}
