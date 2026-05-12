@@ -16,10 +16,5 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 	/// DbSet for managing DoodleNote entities.
 	/// </summary>
 	public DbSet<Models.DoodleNote> DoodleNotes { get; set; }
-
-	protected override void OnModelCreating(ModelBuilder builder)
-	{
-		base.OnModelCreating(builder);
-	}
 }
 
