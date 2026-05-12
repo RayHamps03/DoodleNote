@@ -1,4 +1,5 @@
 using DoodleNote.Features.Admin.Models;
+using DoodleNote.Features.Admin.Constants;
 using DoodleNote.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -77,16 +78,21 @@ public class AccountService
 
         IdentityResult createResult = await _userManager.CreateAsync(user, accountViewModel.Password);
 
-        if (createResult.Succeeded)
-        {
-            _logger.LogInformation($"User account created successfully for username: {accountViewModel.Username}");
-        }
-        else
+        if (!createResult.Succeeded)
         {
             _logger.LogWarning($"Failed to create user account for username: {accountViewModel.Username}");
+            return (createResult, null);
         }
 
-        return (createResult, createResult.Succeeded ? user : null);
+        IdentityResult addToRoleResult = await _userManager.AddToRoleAsync(user, RoleNames.User);
+        if (!addToRoleResult.Succeeded)
+        {
+            _logger.LogWarning($"User account created but failed to assign default role for username: {accountViewModel.Username}");
+            return (addToRoleResult, null);
+        }
+
+        _logger.LogInformation($"User account created successfully for username: {accountViewModel.Username}");
+        return (addToRoleResult, user);
     }
 
     /// <summary>
