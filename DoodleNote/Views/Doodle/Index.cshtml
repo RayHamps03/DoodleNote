@@ -32,6 +32,7 @@
                 canvas.getContext('2d')?.scale(dpr, dpr);
             }
 
+            // Initial resize and setup event listener for window resizing
             resizeCanvas();
             window.addEventListener('resize', () => {
                 resizeCanvas();
@@ -40,6 +41,7 @@
 
             paper.setup(canvas);
 
+            // Drawing tools
             const tool = new paper.Tool();
             let path;
             let isEraserMode = false;
@@ -48,6 +50,7 @@
             const penStrokeWidth = 3;
             const eraserStrokeWidth = 24;
 
+            // Update the eraser button's appearance based on the current mode
             function updateEraserButton() {
                 if (!toggleEraserBtn) {
                     return;
@@ -59,6 +62,7 @@
                 toggleEraserBtn.textContent = isEraserMode ? 'Eraser (On)' : 'Eraser';
             }
 
+            // Toggle between pen and eraser modes when the button is clicked
             if (toggleEraserBtn) {
                 toggleEraserBtn.addEventListener('click', () => {
                     isEraserMode = !isEraserMode;
@@ -67,6 +71,7 @@
                 updateEraserButton();
             }
 
+            // Handle mouse events for drawing
             tool.onMouseDown = function (event) {
                 path = new paper.Path({
                     strokeColor: 'black',
@@ -78,6 +83,7 @@
                 path.add(event.point);
             };
 
+            // Continue drawing as the mouse is dragged
             tool.onMouseDrag = function (event) {
                 if (!path) {
                     return;
