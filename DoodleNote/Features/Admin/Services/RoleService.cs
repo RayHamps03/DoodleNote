@@ -28,8 +28,26 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
         {
             if (!await _roleManager.RoleExistsAsync(role))
             {
-                await _roleManager.CreateAsync(new IdentityRole(role));
-                _logger.LogInformation($"Role '{role}' created successfully.");
+                IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(role));
+
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("Role '{Role}' created successfully.", role);
+                    continue;
+                }
+
+                foreach (IdentityError error in result.Errors)
+                {
+                    _logger.LogError("Failed to create role '{Role}'. Error {Code}: {Description}", role, error.Code, error.Description);
+                }
+
+                if (await _roleManager.RoleExistsAsync(role))
+                {
+                    _logger.LogWarning("Role '{Role}' already exists after a failed create attempt. Continuing initialization.", role);
+                    continue;
+                }
+
+                throw new InvalidOperationException($"Failed to create required role '{role}'. See logs for Identity errors.");
             }
         }
     }
