@@ -4,16 +4,15 @@ using DoodleNote.Models;
 
 namespace DoodleNote.Data;
 
+/// <summary>
+/// Entity Framework database context for Identity users and DoodleNote entities.
+/// </summary>
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-	public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-	{
-	}
+	public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
 	/// <summary>
-	/// This allows the DbContext to manage a collection
-	/// of DoodleNote entities, enabling CRUD operations
-	/// on the DoodleNotes table in the database.
+	/// DbSet for managing DoodleNote entities.
 	/// </summary>
 	public DbSet<Models.DoodleNote> DoodleNotes { get; set; }
 
@@ -21,14 +20,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 	{
 		base.OnModelCreating(builder);
 
-		// Configure ApplicationUser properties
+		// Set default values for admin flags
 		builder.Entity<ApplicationUser>()
 			.Property(u => u.IsAdmin)
 			.HasDefaultValue(false);
 
-		// Configure IsOwner property
-		// IsOwner is a hidden field that marks the system owner account
-		// The owner account cannot have IsAdmin set to false once established
+		// IsOwner marks the system owner account (cannot be changed to false once set)
 		builder.Entity<ApplicationUser>()
 			.Property(u => u.IsOwner)
 			.HasDefaultValue(false);

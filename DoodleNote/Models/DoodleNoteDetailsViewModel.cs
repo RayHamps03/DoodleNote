@@ -1,5 +1,8 @@
 namespace DoodleNote.Models;
 
+/// <summary>
+/// ViewModel for displaying detailed view of a single note.
+/// </summary>
 public class DoodleNoteDetailsViewModel
 {
     public int NoteId { get; set; }
