@@ -18,6 +18,12 @@
         <input type="color" id="pencilColor" class="form-control form-control-color" value="#000000" title="Choose pencil color" />
     </div>
 
+    <div id="eraserSizeGroup" class="d-flex gap-2 align-items-center d-none">
+        <span>Eraser size</span>
+        <input type="range" id="eraserSize" class="form-range" min="4" max="60" step="1" value="24" style="width: 220px;" />
+        <span id="eraserSizeValue" class="text-muted">24</span>
+    </div>
+
     <button type="button" id="toggleEraserBtn" class="btn btn-outline-secondary" aria-pressed="false">Eraser</button>
 </div>
 
@@ -62,10 +68,13 @@
             const pencilSizeInput = document.getElementById('pencilSize');
             const pencilSizeValue = document.getElementById('pencilSizeValue');
             const pencilColorInput = document.getElementById('pencilColor');
+            const eraserSizeGroup = document.getElementById('eraserSizeGroup');
+            const eraserSizeInput = document.getElementById('eraserSize');
+            const eraserSizeValue = document.getElementById('eraserSizeValue');
 
             let penStrokeWidth = 3;
             let penColor = '#000000';
-            const eraserStrokeWidth = 24;
+            let eraserStrokeWidth = 24;
 
             function updatePencilSize() {
                 if (!pencilSizeInput) {
@@ -98,6 +107,24 @@
                 updatePencilColor();
             }
 
+            function updateEraserSize() {
+                if (!eraserSizeInput) {
+                    return;
+                }
+
+                const size = Number.parseInt(eraserSizeInput.value, 10);
+                eraserStrokeWidth = Number.isFinite(size) ? size : 24;
+
+                if (eraserSizeValue) {
+                    eraserSizeValue.textContent = String(eraserStrokeWidth);
+                }
+            }
+
+            if (eraserSizeInput) {
+                eraserSizeInput.addEventListener('input', updateEraserSize);
+                updateEraserSize();
+            }
+
             // Update the eraser button's appearance based on the current mode
             function updateEraserButton() {
                 if (!toggleEraserBtn) {
@@ -108,6 +135,10 @@
                 toggleEraserBtn.classList.toggle('btn-outline-secondary', !isEraserMode);
                 toggleEraserBtn.classList.toggle('btn-secondary', isEraserMode);
                 toggleEraserBtn.textContent = isEraserMode ? 'Eraser (On)' : 'Eraser';
+
+                if (eraserSizeGroup) {
+                    eraserSizeGroup.classList.toggle('d-none', !isEraserMode);
+                }
             }
 
             // Toggle between pen and eraser modes when the button is clicked
