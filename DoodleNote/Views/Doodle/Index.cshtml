@@ -1,73 +1,174 @@
-﻿
-<div>
-    <div class="d-flex gap-3 align-items-center mb-2">
-        <label class="d-flex gap-2 align-items-center">
-            <span>Color</span>
-            <input id="pencilColor" type="color" value="#000000" />
-        </label>
+﻿@{
+    ViewData["Title"] = "Doodle";
+}
 
-        <label class="d-flex gap-2 align-items-center">
-            <span>Size</span>
-            <input id="pencilSize" type="range" min="1" max="50" value="5" />
-            <span id="pencilSizeValue">5</span>
-        </label>
+<h1>Doodle</h1>
 
-        <label class="d-flex gap-2 align-items-center">
-            <span>Pencil</span>
-            <input id="toggleDrawing" type="checkbox" checked />
-        </label>
+<p class="text-muted">Draw on the canvas below.</p>
 
-        <button id="clearCanvas" type="button" class="btn btn-sm btn-outline-danger">Clear</button>
+<div class="mt-2 d-flex flex-wrap gap-4 align-items-center">
+    <div class="d-flex gap-2 align-items-center">
+        <span>Pencil size</span>
+        <input type="range" id="pencilSize" class="form-range" min="1" max="30" step="1" value="3" style="width: 220px;" />
+        <span id="pencilSizeValue" class="text-muted">3</span>
     </div>
 
-    <br />
-
-    <div class="d-flex gap-3 align-items-center mb-2">
-        <button id="isDrawingMode" type="button" class="btn btn-sm btn-outline-primary">Toggle Drawing Mode</button>
+    <div class="d-flex gap-2 align-items-center">
+        <span>Color</span>
+        <input type="color" id="pencilColor" class="form-control form-control-color" value="#000000" title="Choose pencil color" />
     </div>
 
-    <canvas id="canvas" width="800" height="500"></canvas>
+    <div id="eraserSizeGroup" class="d-flex gap-2 align-items-center d-none">
+        <span>Eraser size</span>
+        <input type="range" id="eraserSize" class="form-range" min="4" max="60" step="1" value="24" style="width: 220px;" />
+        <span id="eraserSizeValue" class="text-muted">24</span>
+    </div>
 
-    <!-- Fabric canvas -->
-    @section Scripts{
-        <script>
-        const canvas = new fabric.Canvas('canvas');
-
-        // Enable free drawing (pencil)
-        canvas.isDrawingMode = true;
-        canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-
-        const pencilColor = document.getElementById('pencilColor');
-        const pencilSize = document.getElementById('pencilSize');
-        const pencilSizeValue = document.getElementById('pencilSizeValue');
-        const toggleDrawing = document.getElementById('toggleDrawing');
-        const clearCanvas = document.getElementById('clearCanvas');
-        const isDrawingMode = document.getElementById('isDrawingMode');
-
-        function applyBrushSettings() {
-            if (!canvas.freeDrawingBrush) return;
-            canvas.freeDrawingBrush.color = pencilColor.value;
-            canvas.freeDrawingBrush.width = parseInt(pencilSize.value, 10) || 1;
-            pencilSizeValue.textContent = canvas.freeDrawingBrush.width;
-        }
-
-        applyBrushSettings();
-
-        pencilColor.addEventListener('input', applyBrushSettings);
-        pencilSize.addEventListener('input', applyBrushSettings);
-        toggleDrawing.addEventListener('change', () => {
-            canvas.isDrawingMode = toggleDrawing.checked;
-        });
-        clearCanvas.addEventListener('click', () => {
-            canvas.clear();
-            canvas.requestRenderAll();
-        });
-
-        // Toggle drawing mode button logic
-        isDrawingMode.addEventListener('click', () => {
-            canvas.isDrawingMode = !canvas.isDrawingMode;
-        });
-
-        </script>
-    }
+    <button type="button" id="toggleEraserBtn" class="btn btn-outline-secondary" aria-pressed="false">Eraser</button>
 </div>
+
+
+<div class="border rounded" style="width: 100%; height: 70vh; overflow: hidden;">
+    <canvas id="doodleCanvas" style="width: 100%; height: 100%; touch-action: none;"></canvas>
+</div>
+
+@section Scripts
+{
+    <script>
+        (function () {
+            const canvas = document.getElementById('doodleCanvas');
+            if (!canvas || !window.paper) {
+                return;
+            }
+
+            // Match the backing store size to the element size for crisp drawing.
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+                canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+                canvas.getContext('2d')?.scale(dpr, dpr);
+            }
+
+            // Initial resize and setup event listener for window resizing
+            resizeCanvas();
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                paper.view.viewSize = new paper.Size(canvas.clientWidth, canvas.clientHeight);
+            });
+
+            paper.setup(canvas);
+
+            // Drawing tools
+            const tool = new paper.Tool();
+            let path;
+            let isEraserMode = false;
+
+            const toggleEraserBtn = document.getElementById('toggleEraserBtn');
+            const pencilSizeInput = document.getElementById('pencilSize');
+            const pencilSizeValue = document.getElementById('pencilSizeValue');
+            const pencilColorInput = document.getElementById('pencilColor');
+            const eraserSizeGroup = document.getElementById('eraserSizeGroup');
+            const eraserSizeInput = document.getElementById('eraserSize');
+            const eraserSizeValue = document.getElementById('eraserSizeValue');
+
+            let penStrokeWidth = 3;
+            let penColor = '#000000';
+            let eraserStrokeWidth = 24;
+
+            function updatePencilSize() {
+                if (!pencilSizeInput) {
+                    return;
+                }
+
+                const size = Number.parseInt(pencilSizeInput.value, 10);
+                penStrokeWidth = Number.isFinite(size) ? size : 3;
+
+                if (pencilSizeValue) {
+                    pencilSizeValue.textContent = String(penStrokeWidth);
+                }
+            }
+
+            function updatePencilColor() {
+                if (!pencilColorInput) {
+                    return;
+                }
+
+                penColor = pencilColorInput.value || '#000000';
+            }
+
+            if (pencilSizeInput) {
+                pencilSizeInput.addEventListener('input', updatePencilSize);
+                updatePencilSize();
+            }
+
+            if (pencilColorInput) {
+                pencilColorInput.addEventListener('input', updatePencilColor);
+                updatePencilColor();
+            }
+
+            function updateEraserSize() {
+                if (!eraserSizeInput) {
+                    return;
+                }
+
+                const size = Number.parseInt(eraserSizeInput.value, 10);
+                eraserStrokeWidth = Number.isFinite(size) ? size : 24;
+
+                if (eraserSizeValue) {
+                    eraserSizeValue.textContent = String(eraserStrokeWidth);
+                }
+            }
+
+            if (eraserSizeInput) {
+                eraserSizeInput.addEventListener('input', updateEraserSize);
+                updateEraserSize();
+            }
+
+            // Update the eraser button's appearance based on the current mode
+            function updateEraserButton() {
+                if (!toggleEraserBtn) {
+                    return;
+                }
+
+                toggleEraserBtn.setAttribute('aria-pressed', String(isEraserMode));
+                toggleEraserBtn.classList.toggle('btn-outline-secondary', !isEraserMode);
+                toggleEraserBtn.classList.toggle('btn-secondary', isEraserMode);
+                toggleEraserBtn.textContent = isEraserMode ? 'Eraser (On)' : 'Eraser';
+
+                if (eraserSizeGroup) {
+                    eraserSizeGroup.classList.toggle('d-none', !isEraserMode);
+                }
+            }
+
+            // Toggle between pen and eraser modes when the button is clicked
+            if (toggleEraserBtn) {
+                toggleEraserBtn.addEventListener('click', () => {
+                    isEraserMode = !isEraserMode;
+                    updateEraserButton();
+                });
+                updateEraserButton();
+            }
+
+            // Handle mouse events for drawing
+            tool.onMouseDown = function (event) {
+                path = new paper.Path({
+                    strokeColor: isEraserMode ? 'rgba(0,0,0,1)' : penColor,
+                    strokeWidth: isEraserMode ? eraserStrokeWidth : penStrokeWidth,
+                    strokeCap: 'round',
+                    strokeJoin: 'round',
+                    blendMode: isEraserMode ? 'destination-out' : 'source-over'
+                });
+                path.add(event.point);
+            };
+
+            // Continue drawing as the mouse is dragged
+            tool.onMouseDrag = function (event) {
+                if (!path) {
+                    return;
+                }
+                path.add(event.point);
+            };
+        })();
+    </script>
+}
