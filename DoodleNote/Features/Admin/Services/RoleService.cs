@@ -95,7 +95,7 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
     }
 
     /// <summary>
-    /// Promotes a user to admin role. User is also added to Owner role if not already present.
+    /// Promotes a user to the admin role.
     /// </summary>
     public async Task<IdentityResult> PromoteToAdminAsync(ApplicationUser user, ApplicationUser requestingUser)
     {
