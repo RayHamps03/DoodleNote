@@ -1,12 +1,15 @@
+using DoodleNote.Features.Admin.Models;
 using DoodleNote.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace DoodleNote.Services;
+namespace DoodleNote.Features.Admin.Services;
 
 /// <summary>
 /// Service for handling account-related operations with AspNetIdentity.
+/// Uses role-based authorization instead of user properties.
+/// Part of the self-contained Admin feature module that can be removed without breaking the app.
 /// </summary>
 public class AccountService
 {
@@ -26,7 +29,7 @@ public class AccountService
     /// <returns>A list of validation errors, empty if valid.</returns>
     public List<string> ValidateAccountViewModel(AccountViewModel accountViewModel)
     {
-        var errors = new List<string>();
+        List<string> errors = new();
 
         // Validate Email
         if (string.IsNullOrWhiteSpace(accountViewModel.Email))
@@ -87,30 +90,29 @@ public class AccountService
 
     /// <summary>
     /// Creates a new user account from an AccountViewModel.
+    /// New users are assigned to the User role by default.
     /// </summary>
     /// <param name="accountViewModel">The account view model containing user data.</param>
     /// <returns>A tuple containing the result and the created user (if successful).</returns>
     public async Task<(IdentityResult result, ApplicationUser? user)> CreateAccountAsync(AccountViewModel accountViewModel)
     {
-        // Validate the view model
-        var validationErrors = ValidateAccountViewModel(accountViewModel);
+        List<string> validationErrors = ValidateAccountViewModel(accountViewModel);
         if (validationErrors.Count > 0)
         {
-            var result = IdentityResult.Failed(validationErrors
+            IdentityResult result = IdentityResult.Failed(validationErrors
                 .Select(e => new IdentityError { Description = e })
                 .ToArray());
             return (result, null);
         }
 
-        var user = new ApplicationUser
+        ApplicationUser user = new ApplicationUser
         {
             UserName = accountViewModel.Username,
             Email = accountViewModel.Email,
-            EmailConfirmed = false,
-            IsAdmin = false // New users cannot be admins
+            EmailConfirmed = false
         };
 
-        var createResult = await _userManager.CreateAsync(user, accountViewModel.Password);
+        IdentityResult createResult = await _userManager.CreateAsync(user, accountViewModel.Password);
 
         if (createResult.Succeeded)
         {
@@ -151,7 +153,7 @@ public class AccountService
     /// <returns>True if the email is in use, false otherwise.</returns>
     public async Task<bool> IsEmailInUseAsync(string email)
     {
-        var user = await FindUserByEmailAsync(email);
+        ApplicationUser? user = await FindUserByEmailAsync(email);
         return user != null;
     }
 
@@ -162,125 +164,7 @@ public class AccountService
     /// <returns>True if the username is in use, false otherwise.</returns>
     public async Task<bool> IsUsernameInUseAsync(string username)
     {
-        var user = await FindUserByUsernameAsync(username);
+        ApplicationUser? user = await FindUserByUsernameAsync(username);
         return user != null;
-    }
-
-    /// <summary>
-    /// Finds the current system owner account.
-    /// </summary>
-    /// <returns>The owner ApplicationUser if found, null otherwise.</returns>
-    public async Task<ApplicationUser?> FindOwnerAsync()
-    {
-        return await _userManager.Users.FirstOrDefaultAsync(u => u.IsOwner);
-    }
-
-    /// <summary>
-    /// Promotes a user to owner status.
-    /// Only one owner should exist in the system at a time.
-    /// </summary>
-    /// <param name="userId">The ID of the user to promote to owner.</param>
-    /// <param name="requestingUser">The user requesting the change. Must be an admin.</param>
-    /// <returns>A result indicating success or failure.</returns>
-    public async Task<IdentityResult> PromoteUserToOwnerAsync(string userId, ApplicationUser requestingUser)
-    {
-        if (!requestingUser.IsAdmin)
-        {
-            return IdentityResult.Failed(new IdentityError 
-            { 
-                Description = "Only admin users can promote users to owner." 
-            });
-        }
-
-        var userToPromote = await _userManager.FindByIdAsync(userId);
-        if (userToPromote == null)
-        {
-            return IdentityResult.Failed(new IdentityError 
-            { 
-                Description = "User not found." 
-            });
-        }
-
-        // If there's already an owner, demote them first
-        var currentOwner = await FindOwnerAsync();
-        if (currentOwner != null)
-        {
-            currentOwner.DemoteFromOwner(requestingUser);
-            await _userManager.UpdateAsync(currentOwner);
-        }
-
-        userToPromote.PromoteToOwner(requestingUser);
-        var result = await _userManager.UpdateAsync(userToPromote);
-
-        if (result.Succeeded)
-        {
-            _logger.LogInformation($"User {userToPromote.UserName} promoted to owner by {requestingUser.UserName}");
-        }
-        else
-        {
-            _logger.LogWarning($"Failed to promote user {userToPromote.UserName} to owner");
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Demotes the owner from owner status to regular admin.
-    /// This requires an admin user to request the change.
-    /// </summary>
-    /// <param name="ownerId">The ID of the owner to demote.</param>
-    /// <param name="requestingUser">The user requesting the change. Must be an admin.</param>
-    /// <returns>A result indicating success or failure.</returns>
-    public async Task<IdentityResult> DemoteOwnerAsync(string ownerId, ApplicationUser requestingUser)
-    {
-        if (!requestingUser.IsAdmin)
-        {
-            return IdentityResult.Failed(new IdentityError 
-            { 
-                Description = "Only admin users can demote the owner." 
-            });
-        }
-
-        var owner = await _userManager.FindByIdAsync(ownerId);
-        if (owner == null)
-        {
-            return IdentityResult.Failed(new IdentityError 
-            { 
-                Description = "User not found." 
-            });
-        }
-
-        if (!owner.IsOwner)
-        {
-            return IdentityResult.Failed(new IdentityError 
-            { 
-                Description = "User is not the owner." 
-            });
-        }
-
-        owner.DemoteFromOwner(requestingUser);
-        var result = await _userManager.UpdateAsync(owner);
-
-        if (result.Succeeded)
-        {
-            _logger.LogInformation($"Owner {owner.UserName} demoted to regular admin by {requestingUser.UserName}");
-        }
-        else
-        {
-            _logger.LogWarning($"Failed to demote owner {owner.UserName}");
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Checks if a specific user is the system owner.
-    /// </summary>
-    /// <param name="userId">The ID of the user to check.</param>
-    /// <returns>True if the user is the owner, false otherwise.</returns>
-    public async Task<bool> IsUserOwnerAsync(string userId)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        return user?.IsOwner ?? false;
     }
 }

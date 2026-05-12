@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using DoodleNote.Models;
+using DoodleNote.Features.Admin.Models;
 
 namespace DoodleNote.Data;
 
@@ -19,16 +20,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
 		base.OnModelCreating(builder);
-
-		// Set default values for admin flags
-		builder.Entity<ApplicationUser>()
-			.Property(u => u.IsAdmin)
-			.HasDefaultValue(false);
-
-		// IsOwner marks the system owner account (cannot be changed to false once set)
-		builder.Entity<ApplicationUser>()
-			.Property(u => u.IsOwner)
-			.HasDefaultValue(false);
 	}
 }
 

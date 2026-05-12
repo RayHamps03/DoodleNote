@@ -18,20 +18,19 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 	/// </summary>
 	public async Task<IActionResult> Index(int page = 1)
 	{
-		// Normalize page number - minimum is 1
 		if (page < 1) page = 1;
 
 		int totalCount = await _context.DoodleNotes.CountAsync();
-		int totalPages = (int)Math.Ceiling(totalCount / (double)PageSize);
+		int totalPages = (totalCount + PageSize - 1) / PageSize; // Optimized ceiling division
 
-		// Adjust page if it exceeds total pages
-		if (totalPages > 0 && page > totalPages) page = totalPages;
+		if (page > totalPages && totalPages > 0) page = totalPages;
 
 		List<DoodleNote.Models.DoodleNote> notes = await _context.DoodleNotes
 			.OrderByDescending(n => n.CreatedDate)
 			.ThenBy(n => n.NoteId)
 			.Skip((page - 1) * PageSize)
 			.Take(PageSize)
+			.AsNoTracking() // Improve performance for read-only queries
 			.ToListAsync();
 
 		DoodleNoteListViewModel viewModel = new()
@@ -71,7 +70,9 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 	/// </summary>
 	public async Task<IActionResult> Details(int id)
 	{
-		DoodleNote.Models.DoodleNote? note = await _context.DoodleNotes.FindAsync(id);
+		DoodleNote.Models.DoodleNote? note = await _context.DoodleNotes
+			.AsNoTracking()
+			.FirstOrDefaultAsync(n => n.NoteId == id);
 		if (note == null) return NotFound();
 
 		DoodleNoteDetailsViewModel viewModel = new()
@@ -79,7 +80,7 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 			NoteId = note.NoteId,
 			NoteTitle = note.NoteTitle,
 			Author = string.Empty, // Not implemented
-			Description = note.Description ?? string.Empty, // Default to empty if null
+			Description = note.Description ?? string.Empty,
 			CreatedDate = note.CreatedDate
 		};
 		return View(viewModel);

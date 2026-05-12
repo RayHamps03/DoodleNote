@@ -1,28 +1,37 @@
 using DoodleNote.Data;
+using DoodleNote.Features.Admin.Models;
+using DoodleNote.Features.Admin.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Configure database with connection string and transient failure retry logic
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString, sqlOptions =>
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null)));
+        sqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null)
+                  .CommandTimeout(30)));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-// Configure Identity authentication
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-// Add MVC and Razor Pages support
+builder.Services.AddScoped<RoleService>();
+builder.Services.AddScoped<AccountService>();
 builder.Services.AddControllersWithViews();
 
 WebApplication app = builder.Build();
 
-// Configure the HTTP request pipeline based on environment
+// Initialize roles on startup
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    RoleService roleService = scope.ServiceProvider.GetRequiredService<RoleService>();
+    await roleService.InitializeRolesAsync();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -30,15 +39,12 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts(); // HTTP Strict Transport Security - enforces HTTPS for 30 days by default
+    app.UseHsts();
 }
 
-// Enable HTTPS redirection and configure routing
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthorization();
-
-// Map static assets, controller routes, and Razor Pages
 app.MapStaticAssets();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}").WithStaticAssets();
 app.MapRazorPages().WithStaticAssets();
