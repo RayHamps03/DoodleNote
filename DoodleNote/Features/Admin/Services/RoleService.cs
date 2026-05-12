@@ -10,18 +10,11 @@ namespace DoodleNote.Features.Admin.Services;
 /// Replaces property-based admin handling with AspNetRoles for better scalability.
 /// Part of the self-contained Admin feature module.
 /// </summary>
-public class RoleService
+public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILogger<RoleService> logger)
 {
-    private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ILogger<RoleService> _logger;
-
-    public RoleService(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager, ILogger<RoleService> logger)
-    {
-        _roleManager = roleManager;
-        _userManager = userManager;
-        _logger = logger;
-    }
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly RoleManager<IdentityRole> _roleManager = roleManager;
+    private readonly ILogger<RoleService> _logger = logger;
 
     /// <summary>
     /// Initializes the required application roles in the database.
