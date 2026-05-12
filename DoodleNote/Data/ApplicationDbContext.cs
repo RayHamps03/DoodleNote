@@ -1,19 +1,20 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using DoodleNote.Models;
+using DoodleNote.Features.Admin.Models;
 
 namespace DoodleNote.Data;
 
-public class ApplicationDbContext : IdentityDbContext
+/// <summary>
+/// Entity Framework database context for Identity users and DoodleNote entities.
+/// </summary>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-	public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-	{
-	}
+	public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
 	/// <summary>
-	/// This allows the DbContext to manage a collection
-	/// of DoodleNote entities, enabling CRUD operations
-	/// on the DoodleNotes table in the database.
+	/// DbSet for managing DoodleNote entities.
 	/// </summary>
-    public DbSet<Models.DoodleNote> DoodleNotes { get; set; }
+	public DbSet<Models.DoodleNote> DoodleNotes { get; set; }
 }
 
