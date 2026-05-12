@@ -1,0 +1,188 @@
+@model PaginatedAccountsViewModel
+
+@{
+    ViewData["Title"] = "Account Management";
+}
+
+<div class="container-fluid mt-5 px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Account Management</h1>
+        <p class="text-muted mb-0">Total Accounts: <strong>@Model.TotalAccounts</strong></p>
+    </div>
+
+    @if (Model.Accounts.Count == 0)
+    {
+        <div class="alert alert-info" role="alert">
+            No accounts found.
+        </div>
+    }
+    else
+    {
+        <!-- 3-Column Layout with User Tiles -->
+        <div class="row g-3">
+            @foreach (var account in Model.Accounts)
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate">@account.UserName</h5>
+                            <p class="card-text text-muted text-truncate">
+                                <small>@account.Email</small>
+                            </p>
+
+                            <!-- Role Dropdown -->
+                            @if (account.CanModifyRoles)
+                            {
+                                <div class="mb-3">
+                                    <label for="roleDropdown_@account.UserId" class="form-label small">Server Role</label>
+                                    <select class="form-select form-select-sm" id="roleDropdown_@account.UserId" onchange="submitRoleForm('@account.UserId', this.value)">
+                                        <option value="">-- Select Role --</option>
+                                        <option value="@RoleNames.User" selected="@(account.Roles.Contains(RoleNames.User))">User</option>
+                                        <option value="@RoleNames.Admin" selected="@(account.Roles.Contains(RoleNames.Admin))">Admin</option>
+                                        @if (Model.IsOwner)
+                                        {
+                                            <option value="@RoleNames.Owner" selected="@(account.Roles.Contains(RoleNames.Owner))">Owner</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label small">Server Role</label>
+                                    <div class="alert alert-secondary py-1 px-2 mb-0" role="alert">
+                                        <small>
+                                            @if (account.Roles.Count == 0)
+                                            {
+                                                <text>User</text>
+                                            }
+                                            else
+                                            {
+                                                @string.Join(", ", account.Roles)
+                                            }
+                                        </small>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="card-footer bg-white border-top-0">
+                            <div class="d-grid gap-2">
+                                @if (account.CanRemove)
+                                {
+                                    <form asp-action="RemoveAccount" asp-controller="AdminAccounts" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="userId" value="@account.UserId" />
+                                        <input type="hidden" name="page" value="@Model.CurrentPage" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Are you sure you want to remove this account?');">
+                                            Remove
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden form for role changes -->
+                @if (account.CanModifyRoles)
+                {
+                    <form id="roleForm_@account.UserId" asp-action="AssignRole" asp-controller="AdminAccounts" method="post" class="d-none">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@account.UserId" />
+                        <input type="hidden" name="page" value="@Model.CurrentPage" />
+                        <input type="hidden" name="role" id="roleValue_@account.UserId" value="" />
+                    </form>
+                }
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)">Previous</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                    }
+
+                    @{
+                        int startPage = Math.Max(1, Model.CurrentPage - 2);
+                        int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+
+                        if (startPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-page="1">1</a>
+                            </li>
+                            @if (startPage > 2)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+                        }
+
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                            @if (i == Model.CurrentPage)
+                            {
+                                <li class="page-item active"><span class="page-link">@i</span></li>
+                            }
+                            else
+                            {
+                                <li class="page-item"><a class="page-link" asp-action="Index" asp-route-page="@i">@i</a></li>
+                            }
+                        }
+
+                        if (endPage < Model.TotalPages)
+                        {
+                            @if (endPage < Model.TotalPages - 1)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-page="@Model.TotalPages">@Model.TotalPages</a>
+                            </li>
+                        }
+                    }
+
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)">Next</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function submitRoleForm(userId, role) {
+            if (!role) {
+                return;
+            }
+
+            const form = document.getElementById('roleForm_' + userId);
+            document.getElementById('roleValue_' + userId).value = role;
+            form.submit();
+        }
+    </script>
+}

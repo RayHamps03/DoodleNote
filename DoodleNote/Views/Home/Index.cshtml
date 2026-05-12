@@ -1,8 +1,31 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@using DoodleNote.Features.Admin.Constants
+@using DoodleNote.Features.Admin.Models
+@using DoodleNote.Features.Admin.Services
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleService RoleService
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+    @if (User?.Identity?.IsAuthenticated ?? false)
+    {
+        ApplicationUser? currentUser = await UserManager.GetUserAsync(User);
+        bool isAdmin = currentUser != null && await RoleService.UserHasRoleAsync(currentUser, RoleNames.Admin);
+        bool isOwner = currentUser != null && await RoleService.UserHasRoleAsync(currentUser, RoleNames.Owner);
+
+        if (isAdmin || isOwner)
+        {
+            <div class="mt-4">
+                <a href="@Url.Action("Index", "AdminAccounts")" class="btn btn-primary btn-lg">
+                    Manage Accounts
+                </a>
+            </div>
+        }
+    }
 </div>
