@@ -29,53 +29,16 @@ public class AccountService
     /// <returns>A list of validation errors, empty if valid.</returns>
     public List<string> ValidateAccountViewModel(AccountViewModel accountViewModel)
     {
-        List<string> errors = new();
+        List<ValidationResult> validationResults = new();
+        ValidationContext validationContext = new(accountViewModel);
 
-        // Validate Email
-        if (string.IsNullOrWhiteSpace(accountViewModel.Email))
-        {
-            errors.Add("Email is required.");
-        }
-        else if (!new EmailAddressAttribute().IsValid(accountViewModel.Email))
-        {
-            errors.Add("Email format is invalid.");
-        }
-        else if (accountViewModel.Email.Length > 256)
-        {
-            errors.Add("Email cannot exceed 256 characters.");
-        }
+        Validator.TryValidateObject(accountViewModel, validationContext, validationResults, validateAllProperties: true);
 
-        // Validate Username
-        if (string.IsNullOrWhiteSpace(accountViewModel.Username))
-        {
-            errors.Add("Username is required.");
-        }
-        else if (accountViewModel.Username.Length < 5 || accountViewModel.Username.Length > 20)
-        {
-            errors.Add("Username must be between 5 and 20 characters.");
-        }
-
-        // Validate Password
-        if (string.IsNullOrWhiteSpace(accountViewModel.Password))
-        {
-            errors.Add("Password is required.");
-        }
-        else if (accountViewModel.Password.Length < 6 || accountViewModel.Password.Length > 100)
-        {
-            errors.Add("Password must be between 6 and 100 characters.");
-        }
-        else if (!HasPasswordRequiredCharacters(accountViewModel.Password))
-        {
-            errors.Add("Password must contain at least one number and one symbol (e.g., |, !, %).");
-        }
-
-        // Validate ConfirmPassword
-        if (accountViewModel.Password != accountViewModel.ConfirmPassword)
-        {
-            errors.Add("Passwords do not match.");
-        }
-
-        return errors;
+        return validationResults
+            .Select(result => result.ErrorMessage)
+            .Where(errorMessage => !string.IsNullOrWhiteSpace(errorMessage))
+            .Cast<string>()
+            .ToList();
     }
 
     /// <summary>
