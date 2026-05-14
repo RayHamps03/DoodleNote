@@ -2,7 +2,6 @@ using DoodleNote.Features.Admin.Models;
 using DoodleNote.Features.Admin.Constants;
 using DoodleNote.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace DoodleNote.Features.Admin.Services;
@@ -37,19 +36,9 @@ public class AccountService
 
         return validationResults
             .Select(result => result.ErrorMessage)
-            .Where(errorMessage => !string.IsNullOrWhiteSpace(errorMessage))
+            .Where(static errorMessage => !string.IsNullOrWhiteSpace(errorMessage))
             .Cast<string>()
             .ToList();
-    }
-
-    /// <summary>
-    /// Checks if a password contains at least one number and one symbol.
-    /// </summary>
-    private bool HasPasswordRequiredCharacters(string password)
-    {
-        bool hasNumber = password.Any(char.IsDigit);
-        bool hasSymbol = password.Any(c => "!@#$%^&*|_-()+=[]{};\\'\"<>,.?/\\~`".Contains(c));
-        return hasNumber && hasSymbol;
     }
 
     /// <summary>
@@ -80,18 +69,18 @@ public class AccountService
 
         if (!createResult.Succeeded)
         {
-            _logger.LogWarning($"Failed to create user account for username: {accountViewModel.Username}");
+            _logger.LogWarning("Failed to create user account for username: {Username}", accountViewModel.Username);
             return (createResult, null);
         }
 
         IdentityResult addToRoleResult = await _userManager.AddToRoleAsync(user, RoleNames.User);
         if (!addToRoleResult.Succeeded)
         {
-            _logger.LogWarning($"User account created but failed to assign default role for username: {accountViewModel.Username}");
+            _logger.LogWarning("User account created but failed to assign default role for username: {Username}", accountViewModel.Username);
             return (addToRoleResult, null);
         }
 
-        _logger.LogInformation($"User account created successfully for username: {accountViewModel.Username}");
+        _logger.LogInformation("User account created successfully for username: {Username}", accountViewModel.Username);
         return (addToRoleResult, user);
     }
 
@@ -122,8 +111,7 @@ public class AccountService
     /// <returns>True if the email is in use, false otherwise.</returns>
     public async Task<bool> IsEmailInUseAsync(string email)
     {
-        ApplicationUser? user = await FindUserByEmailAsync(email);
-        return user != null;
+        return await FindUserByEmailAsync(email) != null;
     }
 
     /// <summary>
@@ -133,7 +121,6 @@ public class AccountService
     /// <returns>True if the username is in use, false otherwise.</returns>
     public async Task<bool> IsUsernameInUseAsync(string username)
     {
-        ApplicationUser? user = await FindUserByUsernameAsync(username);
-        return user != null;
+        return await FindUserByUsernameAsync(username) != null;
     }
 }

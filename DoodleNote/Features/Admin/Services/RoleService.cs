@@ -1,7 +1,6 @@
 using DoodleNote.Features.Admin.Constants;
 using DoodleNote.Features.Admin.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace DoodleNote.Features.Admin.Services;
 
@@ -26,29 +25,30 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
 
         foreach (string role in roles)
         {
-            if (!await _roleManager.RoleExistsAsync(role))
+            if (await _roleManager.RoleExistsAsync(role))
             {
-                IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(role));
-
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("Role '{Role}' created successfully.", role);
-                    continue;
-                }
-
-                foreach (IdentityError error in result.Errors)
-                {
-                    _logger.LogError("Failed to create role '{Role}'. Error {Code}: {Description}", role, error.Code, error.Description);
-                }
-
-                if (await _roleManager.RoleExistsAsync(role))
-                {
-                    _logger.LogWarning("Role '{Role}' already exists after a failed create attempt. Continuing initialization.", role);
-                    continue;
-                }
-
-                throw new InvalidOperationException($"Failed to create required role '{role}'. See logs for Identity errors.");
+                continue;
             }
+
+            IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(role));
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("Role '{Role}' created successfully.", role);
+                continue;
+            }
+
+            foreach (IdentityError error in result.Errors)
+            {
+                _logger.LogError("Failed to create role '{Role}'. Error {Code}: {Description}", role, error.Code, error.Description);
+            }
+
+            if (await _roleManager.RoleExistsAsync(role))
+            {
+                _logger.LogWarning("Role '{Role}' already exists after a failed create attempt. Continuing initialization.", role);
+                continue;
+            }
+
+            throw new InvalidOperationException($"Failed to create required role '{role}'. See logs for Identity errors.");
         }
     }
 
@@ -76,7 +76,7 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
         IdentityResult result = await _userManager.AddToRoleAsync(user, role);
         if (result.Succeeded)
         {
-            _logger.LogInformation($"User {user.UserName} added to role {role}.");
+            _logger.LogInformation("User {UserName} added to role {Role}.", user.UserName, role);
         }
         return result;
     }
@@ -89,7 +89,7 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
         IdentityResult result = await _userManager.RemoveFromRoleAsync(user, role);
         if (result.Succeeded)
         {
-            _logger.LogInformation($"User {user.UserName} removed from role {role}.");
+            _logger.LogInformation("User {UserName} removed from role {Role}.", user.UserName, role);
         }
         return result;
     }
