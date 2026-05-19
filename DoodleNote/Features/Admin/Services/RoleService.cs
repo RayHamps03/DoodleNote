@@ -1,6 +1,7 @@
 using DoodleNote.Features.Admin.Constants;
 using DoodleNote.Features.Admin.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace DoodleNote.Features.Admin.Services;
 
@@ -22,14 +23,20 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
     public async Task InitializeRolesAsync()
     {
         string[] roles = { RoleNames.User, RoleNames.Admin, RoleNames.Owner };
+        List<string> rolesToCreate = new();
 
+        // Batch check which roles exist
         foreach (string role in roles)
         {
-            if (await _roleManager.RoleExistsAsync(role))
+            if (!await _roleManager.RoleExistsAsync(role))
             {
-                continue;
+                rolesToCreate.Add(role);
             }
+        }
 
+        // Create missing roles
+        foreach (string role in rolesToCreate)
+        {
             IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(role));
             if (result.Succeeded)
             {
@@ -180,5 +187,61 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
     public async Task<IList<ApplicationUser>> GetUsersByRoleAsync(string role)
     {
         return await _userManager.GetUsersInRoleAsync(role);
+    }
+
+    /// <summary>
+    /// Gets roles for multiple users efficiently with optimized batch querying.
+    /// </summary>
+    public async Task<Dictionary<string, IList<string>>> GetUserRolesMapAsync(IEnumerable<string> userIds)
+    {
+        var roleMap = new Dictionary<string, IList<string>>();
+        var userIdList = userIds.ToList();
+
+        if (userIdList.Count == 0)
+        {
+            return roleMap;
+        }
+
+        // Batch fetch users in a single query to avoid N+1
+        var users = await _userManager.Users
+            .Where(u => userIdList.Contains(u.Id))
+            .ToListAsync();
+
+        // Load roles for each user
+        foreach (var user in users)
+        {
+            roleMap[user.Id] = await _userManager.GetRolesAsync(user);
+        }
+
+        return roleMap;
+    }
+
+    /// <summary>
+    /// Checks if a role is a protected role (Admin or Owner).
+    /// </summary>
+    public static bool IsProtectedRole(IList<string> userRoles)
+    {
+        return userRoles.Contains(RoleNames.Admin) || userRoles.Contains(RoleNames.Owner);
+    }
+
+    /// <summary>
+    /// Checks if a role is one of the application's defined roles.
+    /// </summary>
+    public static bool IsValidRole(string role)
+    {
+        return role == RoleNames.Admin || role == RoleNames.Owner || role == RoleNames.User;
+    }
+
+    /// <summary>
+    /// Determines if a user can modify target user's roles.
+    /// Owner can modify any role; Admin can only modify non-protected roles.
+    /// </summary>
+    public async Task<bool> CanModifyTargetUserAsync(ApplicationUser requestingUser, IList<string> targetUserRoles)
+    {
+        bool isOwner = await UserHasRoleAsync(requestingUser, RoleNames.Owner);
+        if (isOwner) return true;
+
+        bool isAdmin = await UserHasRoleAsync(requestingUser, RoleNames.Admin);
+        return isAdmin && !IsProtectedRole(targetUserRoles);
     }
 }

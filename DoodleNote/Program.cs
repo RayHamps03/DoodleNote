@@ -1,4 +1,5 @@
 using DoodleNote.Data;
+using DoodleNote.Extensions;
 using DoodleNote.Features.Admin.Models;
 using DoodleNote.Features.Admin.Services;
 using Microsoft.AspNetCore.Identity;
@@ -21,30 +22,10 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<AccountService>();
+builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
 WebApplication app = builder.Build();
-
-// Initialize database and roles on startup
-using (IServiceScope scope = app.Services.CreateScope())
-{
-    IServiceProvider services = scope.ServiceProvider;
-    ILogger<Program> logger = services.GetRequiredService<ILogger<Program>>();
-
-    try
-    {
-        ApplicationDbContext dbContext = services.GetRequiredService<ApplicationDbContext>();
-        await dbContext.Database.MigrateAsync();
-
-        RoleService roleService = services.GetRequiredService<RoleService>();
-        await roleService.InitializeRolesAsync();
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "An error occurred while migrating the database and initializing roles.");
-        throw;
-    }
-}
 
 if (app.Environment.IsDevelopment())
 {
@@ -55,6 +36,9 @@ else
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+app.UseDbInitialization();
+app.UseSecurityHeaders();
 
 app.UseHttpsRedirection();
 app.UseRouting();
