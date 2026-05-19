@@ -1,7 +1,6 @@
 using DoodleNote.Features.Admin.Constants;
 using DoodleNote.Features.Admin.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace DoodleNote.Features.Admin.Services;
 
@@ -28,10 +27,30 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
         // Batch check which roles exist
         foreach (string role in roles)
         {
-            if (!await _roleManager.RoleExistsAsync(role))
+            if (await _roleManager.RoleExistsAsync(role))
             {
                 rolesToCreate.Add(role);
             }
+
+            IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(role));
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("Role '{Role}' created successfully.", role);
+                continue;
+            }
+
+            foreach (IdentityError error in result.Errors)
+            {
+                _logger.LogError("Failed to create role '{Role}'. Error {Code}: {Description}", role, error.Code, error.Description);
+            }
+
+            if (await _roleManager.RoleExistsAsync(role))
+            {
+                _logger.LogWarning("Role '{Role}' already exists after a failed create attempt. Continuing initialization.", role);
+                continue;
+            }
+
+            throw new InvalidOperationException($"Failed to create required role '{role}'. See logs for Identity errors.");
         }
 
         // Create missing roles

@@ -26,6 +26,8 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 
 		if (page > totalPages && totalPages > 0) page = totalPages;
 
+		int skip = (page - 1) * PageSize;
+
 		List<DoodleNote.Models.DoodleNote> notes = await _context.DoodleNotes
 			.OrderByDescending(n => n.CreatedDate)
 			.ThenBy(n => n.NoteId)
