@@ -205,7 +205,7 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
         // Batch fetch users in a single query to avoid N+1
         var users = await _userManager.Users
             .Where(u => userIdList.Contains(u.Id))
-            .ToListAsync();
+            .ToListAsync<ApplicationUser>();
 
         // Load roles for each user
         foreach (var user in users)

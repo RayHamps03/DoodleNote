@@ -152,7 +152,7 @@ public class AdminAccountsController : Controller
         var (targetUserError, targetUser) = await GetTargetUserAsync(userId);
         if (targetUserError != null) return targetUserError;
 
-        IList<string> targetRoles = await _roleService.GetUserRolesAsync(targetUser);
+        IList<string> targetRoles = await _roleService.GetUserRolesAsync(targetUser!);
 
         if (!await _roleService.CanModifyTargetUserAsync(currentUser!, targetRoles))
         {
