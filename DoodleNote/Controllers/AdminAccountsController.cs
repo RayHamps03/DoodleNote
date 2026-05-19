@@ -36,8 +36,8 @@ public class AdminAccountsController : Controller
             return Unauthorized();
         }
 
-        Task<bool> isOwnerTask = _roleService.UserHasRoleAsync(currentUser, RoleNames.Owner);
-        Task<bool> isAdminTask = _roleService.UserHasRoleAsync(currentUser, RoleNames.Admin);
+        bool isOwner = await _roleService.UserHasRoleAsync(currentUser, RoleNames.Owner);
+        bool isAdmin = await _roleService.UserHasRoleAsync(currentUser, RoleNames.Admin);
 
         if (page < 1) page = 1;
 
@@ -46,22 +46,20 @@ public class AdminAccountsController : Controller
 
         if (page > totalPages && totalPages > 0) page = totalPages;
 
-        bool isOwner = await isOwnerTask;
-        bool isAdmin = await isAdminTask;
-
         List<ApplicationUser> users = await _userManager.Users
             .OrderBy(u => u.UserName)
             .Skip((page - 1) * PageSize)
             .Take(PageSize)
             .ToListAsync();
 
-        List<AccountManagementViewModel> accounts = new(users.Count);
+        List<AccountManagementViewModel> accounts = new();
         foreach (ApplicationUser user in users)
         {
             IList<string> userRoles = await _roleService.GetUserRolesAsync(user);
-            bool isProtectedRole = userRoles.Contains(RoleNames.Admin) || userRoles.Contains(RoleNames.Owner);
-            bool canRemove = isOwner || !isProtectedRole;
-            bool canModifyRoles = isOwner || (isAdmin && !isProtectedRole);
+            bool canRemove = isOwner || (!userRoles.Contains(RoleNames.Admin) && !userRoles.Contains(RoleNames.Owner));
+
+            // Owner can modify all roles. Admin can modify normal users but not admins or owners.
+            bool canModifyRoles = isOwner || (isAdmin && !userRoles.Contains(RoleNames.Admin) && !userRoles.Contains(RoleNames.Owner));
 
             accounts.Add(new AccountManagementViewModel
             {
@@ -155,8 +153,8 @@ public class AdminAccountsController : Controller
             return Unauthorized();
         }
 
-        Task<bool> isOwnerTask = _roleService.UserHasRoleAsync(currentUser, RoleNames.Owner);
-        Task<bool> isAdminTask = _roleService.UserHasRoleAsync(currentUser, RoleNames.Admin);
+        bool isOwner = await _roleService.UserHasRoleAsync(currentUser, RoleNames.Owner);
+        bool isAdmin = await _roleService.UserHasRoleAsync(currentUser, RoleNames.Admin);
 
         ApplicationUser? targetUser = await _userManager.FindByIdAsync(userId);
         if (targetUser == null)
@@ -172,11 +170,8 @@ public class AdminAccountsController : Controller
 
         IList<string> targetRoles = await _roleService.GetUserRolesAsync(targetUser);
 
-        bool isOwner = await isOwnerTask;
-        bool isAdmin = await isAdminTask;
-
-        bool isProtectedRole = targetRoles.Contains(RoleNames.Admin) || targetRoles.Contains(RoleNames.Owner);
-        if (!isOwner && (isAdmin && isProtectedRole))
+        // Owner can modify all; Admin cannot modify admins or owners
+        if (!isOwner && (isAdmin && (targetRoles.Contains(RoleNames.Admin) || targetRoles.Contains(RoleNames.Owner))))
         {
             return Forbid();
         }
@@ -214,8 +209,8 @@ public class AdminAccountsController : Controller
             return Unauthorized();
         }
 
-        Task<bool> isOwnerTask = _roleService.UserHasRoleAsync(currentUser, RoleNames.Owner);
-        Task<bool> isAdminTask = _roleService.UserHasRoleAsync(currentUser, RoleNames.Admin);
+        bool isOwner = await _roleService.UserHasRoleAsync(currentUser, RoleNames.Owner);
+        bool isAdmin = await _roleService.UserHasRoleAsync(currentUser, RoleNames.Admin);
 
         ApplicationUser? targetUser = await _userManager.FindByIdAsync(userId);
         if (targetUser == null)
@@ -231,11 +226,8 @@ public class AdminAccountsController : Controller
 
         IList<string> targetRoles = await _roleService.GetUserRolesAsync(targetUser);
 
-        bool isOwner = await isOwnerTask;
-        bool isAdmin = await isAdminTask;
-
-        bool isProtectedRole = targetRoles.Contains(RoleNames.Admin) || targetRoles.Contains(RoleNames.Owner);
-        if (!isOwner && (isAdmin && isProtectedRole))
+        // Owner can modify all; Admin cannot modify admins or owners
+        if (!isOwner && (isAdmin && (targetRoles.Contains(RoleNames.Admin) || targetRoles.Contains(RoleNames.Owner))))
         {
             return Forbid();
         }

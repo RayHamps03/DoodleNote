@@ -25,12 +25,10 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 
 		if (page > totalPages && totalPages > 0) page = totalPages;
 
-		int skip = (page - 1) * PageSize;
-
 		List<DoodleNote.Models.DoodleNote> notes = await _context.DoodleNotes
 			.OrderByDescending(n => n.CreatedDate)
 			.ThenBy(n => n.NoteId)
-			.Skip(skip)
+			.Skip((page - 1) * PageSize)
 			.Take(PageSize)
 			.AsNoTracking() // Improve performance for read-only queries
 			.ToListAsync();
@@ -115,7 +113,7 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 			}
 			catch (DbUpdateConcurrencyException)
 			{
-				if (!await DoodleNoteExistsAsync(note.NoteId)) return NotFound();
+				if (!DoodleNoteExists(note.NoteId)) return NotFound();
 				throw;
 			}
 			return RedirectToAction(nameof(Index));
@@ -126,5 +124,5 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 	/// <summary>
 	/// Checks if a note exists by NoteId.
 	/// </summary>
-	private Task<bool> DoodleNoteExistsAsync(int id) => _context.DoodleNotes.AnyAsync(e => e.NoteId == id);
+	private bool DoodleNoteExists(int id) => _context.DoodleNotes.Any(e => e.NoteId == id);
 }
