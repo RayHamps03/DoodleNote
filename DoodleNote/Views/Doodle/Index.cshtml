@@ -1,173 +1,298 @@
 ﻿@{
-    ViewData["Title"] = "Doodle";
+    ViewData["Title"] = "Doodle Board";
 }
 
-<h1>Doodle</h1>
+<div class="container-fluid px-0">
+    <div class="d-flex flex-wrap gap-2 align-items-end mb-2">
+        <div>
+            <label class="form-label mb-1" for="toolSelect">Tool</label>
+            <select id="toolSelect" class="form-select form-select-sm">
+                <option value="pen" selected>Pen</option>
+                <option value="eraser">Eraser</option>
+                <option value="line">Line</option>
+                <option value="rect">Rectangle</option>
+                <option value="ellipse">Ellipse</option>
+            </select>
+        </div>
 
-<p class="text-muted">Draw on the canvas below.</p>
+        <div>
+            <label class="form-label mb-1" for="colorPicker">Color</label>
+            <input id="colorPicker" type="color" class="form-control form-control-color form-control-sm" value="#111111" />
+        </div>
 
-<div class="mt-2 d-flex flex-wrap gap-4 align-items-center">
-    <div class="d-flex gap-2 align-items-center">
-        <span>Pencil size</span>
-        <input type="range" id="pencilSize" class="form-range" min="1" max="30" step="1" value="3" style="width: 220px;" />
-        <span id="pencilSizeValue" class="text-muted">3</span>
+        <div style="min-width: 160px;">
+            <label class="form-label mb-1" for="sizeRange">Brush size: <span id="sizeValue">6</span></label>
+            <input id="sizeRange" type="range" class="form-range" min="1" max="64" value="6" />
+        </div>
+
+        <div style="min-width: 160px;">
+            <label class="form-label mb-1" for="smoothRange">Smoothing: <span id="smoothValue">0</span></label>
+            <input id="smoothRange" type="range" class="form-range" min="0" max="100" value="0" />
+        </div>
+
+        <div class="form-check mb-1">
+            <input class="form-check-input" type="checkbox" id="fillShapes" />
+            <label class="form-check-label" for="fillShapes">Fill shapes</label>
+        </div>
+
+        <div style="min-width: 160px;">
+            <label class="form-label mb-1" for="zoomRange">Zoom: <span id="zoomValue">100%</span></label>
+            <input id="zoomRange" type="range" class="form-range" min="25" max="300" value="100" />
+        </div>
+
+        <div class="ms-auto d-flex flex-wrap gap-2">
+            <button id="undoBtn" class="btn btn-sm btn-outline-secondary" type="button" disabled>Undo</button>
+            <button id="redoBtn" class="btn btn-sm btn-outline-secondary" type="button" disabled>Redo</button>
+            <button id="clearBtn" class="btn btn-sm btn-outline-danger" type="button">Clear</button>
+
+            
+
+            <button id="saveBtn" class="btn btn-sm btn-primary" type="button">Save PNG</button>
+        </div>
     </div>
 
-    <div class="d-flex gap-2 align-items-center">
-        <span>Color</span>
-        <input type="color" id="pencilColor" class="form-control form-control-color" value="#000000" title="Choose pencil color" />
+    <div class="d-flex justify-content-center">
+        <div id="canvasHost" class="border rounded bg-white shadow-sm" style="width: 420px; height: 420px; position: relative;">
+            <canvas id="doodleCanvas" style="width: 100%; height: 100%; display: block; touch-action: none;"></canvas>
+        </div>
     </div>
 
-    <div id="eraserSizeGroup" class="d-flex gap-2 align-items-center d-none">
-        <span>Eraser size</span>
-        <input type="range" id="eraserSize" class="form-range" min="4" max="60" step="1" value="24" style="width: 220px;" />
-        <span id="eraserSizeValue" class="text-muted">24</span>
+    <div class="text-muted small mt-2">
+        Tip: Hold <kbd>Shift</kbd> while drawing shapes to constrain proportions (square/circle).
     </div>
-
-    <button type="button" id="toggleEraserBtn" class="btn btn-outline-secondary" aria-pressed="false">Eraser</button>
 </div>
 
-
-<div class="border rounded" style="width: 100%; height: 70vh; overflow: hidden;">
-    <canvas id="doodleCanvas" style="width: 100%; height: 100%; touch-action: none;"></canvas>
-</div>
-
-@section Scripts
-{
+@section Scripts {
     <script>
         (function () {
+            const canvasHost = document.getElementById('canvasHost');
             const canvas = document.getElementById('doodleCanvas');
-            if (!canvas || !window.paper) {
-                return;
-            }
 
-            // Match the backing store size to the element size for crisp drawing.
-            function resizeCanvas() {
-                const rect = canvas.getBoundingClientRect();
-                const dpr = window.devicePixelRatio || 1;
-                canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-                canvas.height = Math.max(1, Math.floor(rect.height * dpr));
-                canvas.getContext('2d')?.scale(dpr, dpr);
-            }
+            const toolSelect = document.getElementById('toolSelect');
+            const colorPicker = document.getElementById('colorPicker');
+            const sizeRange = document.getElementById('sizeRange');
+            const sizeValue = document.getElementById('sizeValue');
+            const smoothRange = document.getElementById('smoothRange');
+            const smoothValue = document.getElementById('smoothValue');
+            const fillShapes = document.getElementById('fillShapes');
+            const zoomRange = document.getElementById('zoomRange');
+            const zoomValue = document.getElementById('zoomValue');
 
-            // Initial resize and setup event listener for window resizing
-            resizeCanvas();
-            window.addEventListener('resize', () => {
-                resizeCanvas();
-                paper.view.viewSize = new paper.Size(canvas.clientWidth, canvas.clientHeight);
-            });
+            const undoBtn = document.getElementById('undoBtn');
+            const redoBtn = document.getElementById('redoBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const saveBtn = document.getElementById('saveBtn');
 
+            // ---- Paper.js setup ----
             paper.setup(canvas);
 
-            // Drawing tools
-            const tool = new paper.Tool();
-            let path;
-            let isEraserMode = false;
-
-            const toggleEraserBtn = document.getElementById('toggleEraserBtn');
-            const pencilSizeInput = document.getElementById('pencilSize');
-            const pencilSizeValue = document.getElementById('pencilSizeValue');
-            const pencilColorInput = document.getElementById('pencilColor');
-            const eraserSizeGroup = document.getElementById('eraserSizeGroup');
-            const eraserSizeInput = document.getElementById('eraserSize');
-            const eraserSizeValue = document.getElementById('eraserSizeValue');
-
-            let penStrokeWidth = 3;
-            let penColor = '#000000';
-            let eraserStrokeWidth = 24;
-
-            function updatePencilSize() {
-                if (!pencilSizeInput) {
-                    return;
-                }
-
-                const size = Number.parseInt(pencilSizeInput.value, 10);
-                penStrokeWidth = Number.isFinite(size) ? size : 3;
-
-                if (pencilSizeValue) {
-                    pencilSizeValue.textContent = String(penStrokeWidth);
-                }
-            }
-
-            function updatePencilColor() {
-                if (!pencilColorInput) {
-                    return;
-                }
-
-                penColor = pencilColorInput.value || '#000000';
-            }
-
-            if (pencilSizeInput) {
-                pencilSizeInput.addEventListener('input', updatePencilSize);
-                updatePencilSize();
-            }
-
-            if (pencilColorInput) {
-                pencilColorInput.addEventListener('input', updatePencilColor);
-                updatePencilColor();
-            }
-
-            function updateEraserSize() {
-                if (!eraserSizeInput) {
-                    return;
-                }
-
-                const size = Number.parseInt(eraserSizeInput.value, 10);
-                eraserStrokeWidth = Number.isFinite(size) ? size : 24;
-
-                if (eraserSizeValue) {
-                    eraserSizeValue.textContent = String(eraserStrokeWidth);
-                }
-            }
-
-            if (eraserSizeInput) {
-                eraserSizeInput.addEventListener('input', updateEraserSize);
-                updateEraserSize();
-            }
-
-            // Update the eraser button's appearance based on the current mode
-            function updateEraserButton() {
-                if (!toggleEraserBtn) {
-                    return;
-                }
-
-                toggleEraserBtn.setAttribute('aria-pressed', String(isEraserMode));
-                toggleEraserBtn.classList.toggle('btn-outline-secondary', !isEraserMode);
-                toggleEraserBtn.classList.toggle('btn-secondary', isEraserMode);
-                toggleEraserBtn.textContent = isEraserMode ? 'Eraser (On)' : 'Eraser';
-
-                if (eraserSizeGroup) {
-                    eraserSizeGroup.classList.toggle('d-none', !isEraserMode);
-                }
-            }
-
-            // Toggle between pen and eraser modes when the button is clicked
-            if (toggleEraserBtn) {
-                toggleEraserBtn.addEventListener('click', () => {
-                    isEraserMode = !isEraserMode;
-                    updateEraserButton();
-                });
-                updateEraserButton();
-            }
-
-            // Handle mouse events for drawing
-            tool.onMouseDown = function (event) {
-                path = new paper.Path({
-                    strokeColor: isEraserMode ? 'rgba(0,0,0,1)' : penColor,
-                    strokeWidth: isEraserMode ? eraserStrokeWidth : penStrokeWidth,
-                    strokeCap: 'round',
-                    strokeJoin: 'round',
-                    blendMode: isEraserMode ? 'destination-out' : 'source-over'
-                });
-                path.add(event.point);
+            const state = {
+                tool: toolSelect.value,
+                color: colorPicker.value,
+                width: Number(sizeRange.value),
+                smoothing: Number(smoothRange.value) / 100,
+                fill: fillShapes.checked,
+                zoom: 1.0
             };
 
-            // Continue drawing as the mouse is dragged
-            tool.onMouseDrag = function (event) {
-                if (!path) {
+            // ---- History (snapshot-based) ----
+            const undoStack = [];
+            const redoStack = [];
+            const MAX_HISTORY = 50;
+
+            function exportSnapshot() {
+                // Paper returns JSON string by default; keep it as a string for cheap storage.
+                return paper.project.exportJSON({ asString: true, precision: 5 });
+            }
+
+            function importSnapshot(json) {
+                paper.project.clear();
+                paper.project.importJSON(json);
+                paper.view.update();
+            }
+
+            function pushHistory() {
+                undoStack.push(exportSnapshot());
+                if (undoStack.length > MAX_HISTORY) undoStack.shift();
+                redoStack.length = 0;
+                updateHistoryButtons();
+            }
+
+            function updateHistoryButtons() {
+                undoBtn.disabled = undoStack.length <= 1;
+                redoBtn.disabled = redoStack.length === 0;
+            }
+
+            // Initialize history with blank canvas state
+            pushHistory();
+            
+            // ---- UI bindings ----
+            toolSelect.addEventListener('change', () => state.tool = toolSelect.value);
+
+            colorPicker.addEventListener('input', () => state.color = colorPicker.value);
+
+            sizeRange.addEventListener('input', () => {
+                state.width = Number(sizeRange.value);
+                sizeValue.textContent = String(state.width);
+            });
+
+            smoothRange.addEventListener('input', () => {
+                state.smoothing = Number(smoothRange.value) / 100;
+                smoothValue.textContent = state.smoothing.toFixed(2);
+            });
+
+            fillShapes.addEventListener('change', () => state.fill = fillShapes.checked);
+
+            zoomRange.addEventListener('input', () => {
+                const z = Number(zoomRange.value) / 100;
+                state.zoom = z;
+                paper.view.zoom = z;
+                zoomValue.textContent = `${Math.round(z * 100)}%`;
+            });
+
+            undoBtn.addEventListener('click', () => {
+                if (undoStack.length <= 1) return;
+                const current = undoStack.pop();
+                redoStack.push(current);
+                importSnapshot(undoStack[undoStack.length - 1]);
+                updateHistoryButtons();
+            });
+
+            redoBtn.addEventListener('click', () => {
+                if (redoStack.length === 0) return;
+                const next = redoStack.pop();
+                undoStack.push(next);
+                importSnapshot(next);
+                updateHistoryButtons();
+            });
+
+            clearBtn.addEventListener('click', () => {
+                paper.project.activeLayer.removeChildren();
+                paper.view.update();
+                pushHistory();
+            });
+
+            saveBtn.addEventListener('click', () => {
+                // Export as PNG from the underlying canvas.
+                const dataUrl = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = `doodle-${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            });
+
+            
+
+            // ---- Drawing tool (supports pen/eraser/shapes) ----
+            let activeItem = null;
+            let startPoint = null;
+
+            function makeStrokeStyle() {
+                return {
+                    strokeColor: state.color,
+                    strokeWidth: state.width,
+                    strokeCap: 'round',
+                    strokeJoin: 'round'
+                };
+            }
+
+            function applyShapeStyle(item) {
+                item.strokeColor = state.color;
+                item.strokeWidth = Math.max(1, Math.floor(state.width));
+                item.strokeJoin = 'round';
+
+                if (state.fill) item.fillColor = state.color;
+                else item.fillColor = null;
+            }
+
+            const tool = new paper.Tool();
+            tool.minDistance = 1;
+
+            tool.onMouseDown = (event) => {
+                startPoint = event.point.clone();
+                activeItem = null;
+
+                if (state.tool === 'pen') {
+                    activeItem = new paper.Path(makeStrokeStyle());
+                    activeItem.add(event.point);
+                } else if (state.tool === 'eraser') {
+                    // True eraser by punching out pixels:
+                    activeItem = new paper.Path({
+                        strokeColor: 'black',
+                        strokeWidth: Math.max(4, state.width * 2),
+                        strokeCap: 'round',
+                        strokeJoin: 'round',
+                        blendMode: 'destination-out'
+                    });
+                    activeItem.add(event.point);
+                } else if (state.tool === 'line') {
+                    activeItem = new paper.Path(makeStrokeStyle());
+                    activeItem.add(event.point);
+                    activeItem.add(event.point);
+                } else if (state.tool === 'rect') {
+                    activeItem = new paper.Path.Rectangle(new paper.Rectangle(event.point, event.point));
+                    applyShapeStyle(activeItem);
+                } else if (state.tool === 'ellipse') {
+                    activeItem = new paper.Path.Ellipse(new paper.Rectangle(event.point, event.point));
+                    applyShapeStyle(activeItem);
+                }
+            };
+
+            tool.onMouseDrag = (event) => {
+                if (!activeItem) return;
+
+                if (state.tool === 'pen' || state.tool === 'eraser') {
+                    activeItem.add(event.point);
                     return;
                 }
-                path.add(event.point);
+
+                // Shapes: rebuild from start to current point
+                const endPoint = event.point.clone();
+                const constrain = event.modifiers.shift === true;
+
+                let rect = new paper.Rectangle(startPoint, endPoint);
+
+                if (constrain) {
+                    // Make it a square based on the max dimension
+                    const size = Math.max(Math.abs(rect.width), Math.abs(rect.height));
+                    const sx = rect.width < 0 ? -1 : 1;
+                    const sy = rect.height < 0 ? -1 : 1;
+                    rect = new paper.Rectangle(startPoint, startPoint.add(new paper.Point(size * sx, size * sy)));
+                }
+
+                activeItem.remove();
+
+                if (state.tool === 'line') {
+                    activeItem = new paper.Path(makeStrokeStyle());
+                    activeItem.add(startPoint);
+                    activeItem.add(endPoint);
+                } else if (state.tool === 'rect') {
+                    activeItem = new paper.Path.Rectangle(rect);
+                    applyShapeStyle(activeItem);
+                } else if (state.tool === 'ellipse') {
+                    activeItem = new paper.Path.Ellipse(rect);
+                    applyShapeStyle(activeItem);
+                }
+            };
+
+            tool.onMouseUp = () => {
+                if (!activeItem) return;
+
+                if (state.tool === 'pen' && state.smoothing > 0) {
+                    // Light smoothing: simplify then smooth
+                    try {
+                        activeItem.simplify(Math.max(0.1, state.smoothing * 8));
+                        activeItem.smooth({ type: 'continuous' });
+                    } catch { /* ignore smoothing errors */ }
+                }
+
+                paper.view.update();
+                pushHistory();
+
+                activeItem = null;
+                startPoint = null;
             };
         })();
     </script>
