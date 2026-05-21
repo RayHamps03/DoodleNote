@@ -152,6 +152,7 @@ public class AdminAccountsController : Controller
         var (targetUserError, targetUser) = await GetTargetUserAsync(userId);
         if (targetUserError != null) return targetUserError;
 
+        // Get the roles of the target user
         IList<string> targetRoles = await _roleService.GetUserRolesAsync(targetUser!);
 
         if (!await _roleService.CanModifyTargetUserAsync(currentUser!, targetRoles))
@@ -160,8 +161,8 @@ public class AdminAccountsController : Controller
         }
 
         IdentityResult result = isAssignment
-            ? await _roleService.AddUserToRoleAsync(targetUser, role)
-            : await _roleService.RemoveUserFromRoleAsync(targetUser, role);
+            ? await _roleService.AddUserToRoleAsync(targetUser!, role)
+            : await _roleService.RemoveUserFromRoleAsync(targetUser!, role);
 
         if (result.Succeeded)
         {
