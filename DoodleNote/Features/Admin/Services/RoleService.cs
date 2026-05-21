@@ -1,6 +1,7 @@
 using DoodleNote.Features.Admin.Constants;
 using DoodleNote.Features.Admin.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace DoodleNote.Features.Admin.Services;
 
@@ -221,13 +222,13 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
             return roleMap;
         }
 
-        // Batch fetch users in a single query to avoid N+1
-        var users = await _userManager.Users
-            .Where(u => userIdList.Contains(u.Id))
-            .ToListAsync<ApplicationUser>();
+		// Batch fetch users in a single query to avoid N+1
+		var users = await _userManager.Users
+			.Where(u => userIdList.Contains(u.Id))
+			.ToListAsync();
 
-        // Load roles for each user
-        foreach (var user in users)
+		// Load roles for each user
+		foreach (var user in users)
         {
             roleMap[user.Id] = await _userManager.GetRolesAsync(user);
         }
