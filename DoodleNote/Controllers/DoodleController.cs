@@ -8,4 +8,11 @@ public class DoodleController : Controller
 	{
 		return View();
 	}
+
+	[HttpGet] 
+	public IActionResult Upload()
+	{
+		return View();
+	}
 }
+
