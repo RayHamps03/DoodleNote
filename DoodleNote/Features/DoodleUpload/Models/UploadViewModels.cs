@@ -1,3 +1,4 @@
+namespace DoodleNote.Features.DoodleUpload.Models;
 
 using System.ComponentModel.DataAnnotations;
 
