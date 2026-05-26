@@ -35,6 +35,42 @@ body {
   margin-bottom: 60px;
 }
 
+#themeToggleButton {
+  min-width: 92px;
+  background-color: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+#themeToggleButton:hover,
+#themeToggleButton:focus {
+  background-color: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+html[data-bs-theme="dark"] body {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+html[data-bs-theme="dark"] #themeToggleButton {
+  background-color: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+html[data-bs-theme="dark"] #themeToggleButton:hover,
+html[data-bs-theme="dark"] #themeToggleButton:focus {
+  background-color: #f2f2f2;
+  color: #000;
+  border-color: #f2f2f2;
+}
+
+html[data-bs-theme="dark"] .footer {
+  border-top-color: var(--bs-border-color) !important;
+}
+
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;
