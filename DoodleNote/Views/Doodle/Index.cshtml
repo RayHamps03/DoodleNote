@@ -46,10 +46,14 @@
             <button id="clearBtn" class="btn btn-sm btn-outline-danger" type="button">Clear</button>
 
             
-
+             <button id="uploadBtn" class="btn btn-sm btn-success" type="button">Upload</button>
             <button id="saveBtn" class="btn btn-sm btn-primary" type="button">Save PNG</button>
         </div>
     </div>
+
+    <form id="uploadForm" method="post" asp-controller="Doodle" asp-action="StartUpload" class="d-none">
+        @Html.AntiForgeryToken()
+    </form>
 
     <div class="d-flex justify-content-center">
         <div id="canvasHost" class="border rounded bg-white shadow-sm" style="width: 420px; height: 420px; position: relative;">
@@ -82,6 +86,7 @@
             const redoBtn = document.getElementById('redoBtn');
             const clearBtn = document.getElementById('clearBtn');
             const saveBtn = document.getElementById('saveBtn');
+            const uploadBtn = document.getElementById('uploadBtn');
 
             // ---- Paper.js setup ----
             paper.setup(canvas);
@@ -183,7 +188,29 @@
                 a.remove();
             });
 
-            
+            uploadBtn.addEventListener('click', async () => {
+                const dataUrl = canvas.toDataURL('image/png');
+
+                const antiForgeryToken = document.querySelector('#uploadForm input[name="__RequestVerificationToken"]').value;
+
+                const response = await fetch('@Url.Action("StartUpload", "Doodle")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': antiForgeryToken
+                    },
+                    body: JSON.stringify({ pngDataUrl: dataUrl })
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    alert(`Upload failed: ${text}`);
+                    return;
+                }
+
+                const json = await response.json();
+                window.location.href = json.redirectUrl;
+            });
 
             // ---- Drawing tool (supports pen/eraser/shapes) ----
             let activeItem = null;
