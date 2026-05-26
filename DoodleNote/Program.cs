@@ -20,6 +20,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddAntiforgery(options =>
+    options.HeaderName = "X-CSRF-TOKEN");
+
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddRazorPages();
