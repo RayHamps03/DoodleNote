@@ -7,7 +7,6 @@ other users on the site.
 ## Upcoming Features
 There are many upcoming features that are planned
 to be implemented into the website, including:
-- Functional login system
 - Drawing board to create doodles
 - Dashboard home page to show notes as uploaded doodles
 - Like and comment system to interact with other user's doodles
