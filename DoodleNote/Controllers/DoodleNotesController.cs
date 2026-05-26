@@ -18,10 +18,11 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 	/// </summary>
 	public async Task<IActionResult> Index(int page = 1)
 	{
+		const int pageSize = PageSize;
 		if (page < 1) page = 1;
 
 		int totalCount = await _context.DoodleNotes.CountAsync();
-		int totalPages = (totalCount + PageSize - 1) / PageSize; // Optimized ceiling division
+		int totalPages = (totalCount + pageSize - 1) / pageSize;
 
 		if (page > totalPages && totalPages > 0) page = totalPages;
 
@@ -30,19 +31,17 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		List<DoodleNote.Models.DoodleNote> notes = await _context.DoodleNotes
 			.OrderByDescending(n => n.CreatedDate)
 			.ThenBy(n => n.NoteId)
-			.Skip(skip)
-			.Take(PageSize)
-			.AsNoTracking() // Improve performance for read-only queries
+			.Skip((page - 1) * pageSize)
+			.Take(pageSize)
+			.AsNoTracking()
 			.ToListAsync();
 
-		DoodleNoteListViewModel viewModel = new()
+		return View(new DoodleNoteListViewModel
 		{
 			Notes = notes,
 			CurrentPage = page,
 			TotalPages = totalPages
-		};
-
-		return View(viewModel);
+		});
 	}
 
 	/// <summary>
@@ -57,14 +56,13 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> Create([Bind("NoteTitle,Description")] DoodleNote.Models.DoodleNote note)
 	{
-		if (ModelState.IsValid)
-		{
-			note.CreatedDate = DateTime.Now;
-			_context.DoodleNotes.Add(note);
-			await _context.SaveChangesAsync();
-			return RedirectToAction(nameof(Index));
-		}
-		return View(note);
+		if (!ModelState.IsValid)
+			return View(note);
+
+		note.CreatedDate = DateTime.Now;
+		_context.DoodleNotes.Add(note);
+		await _context.SaveChangesAsync();
+		return RedirectToAction(nameof(Index));
 	}
 
 	/// <summary>
@@ -104,23 +102,24 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> Edit(int id, [Bind("NoteId,NoteTitle,Description")] DoodleNote.Models.DoodleNote note)
 	{
-		if (id != note.NoteId) return NotFound();
+		if (id != note.NoteId)
+			return NotFound();
 
-		if (ModelState.IsValid)
+		if (!ModelState.IsValid)
+			return View(note);
+
+		try
 		{
-			try
-			{
-				_context.Update(note);
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				if (!await DoodleNoteExistsAsync(note.NoteId)) return NotFound();
-				throw;
-			}
-			return RedirectToAction(nameof(Index));
+			_context.Update(note);
+			await _context.SaveChangesAsync();
 		}
-		return View(note);
+		catch (DbUpdateConcurrencyException)
+		{
+			if (!await DoodleNoteExistsAsync(note.NoteId))
+				return NotFound();
+			throw;
+		}
+		return RedirectToAction(nameof(Index));
 	}
 
 	/// <summary>

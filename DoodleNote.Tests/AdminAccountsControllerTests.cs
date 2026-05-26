@@ -5,6 +5,7 @@ using DoodleNote.Features.Admin.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ public class AdminAccountsControllerTests
 		Mock<UserManager<ApplicationUser>> userManagerMock = CreateUserManagerMock();
 		userManagerMock.Setup(um => um.GetUserAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync((ApplicationUser?)null);
 
-		AdminAccountsController controller = new(userManagerMock.Object, Mock.Of<RoleService>());
+		AdminAccountsController controller = new(userManagerMock.Object, CreateRoleServiceMock());
 
 		IActionResult result = await controller.Index();
 
@@ -30,7 +31,7 @@ public class AdminAccountsControllerTests
 	[Fact]
 	public async Task RemoveAccount_ReturnsBadRequest_WhenUserIdMissing()
 	{
-		AdminAccountsController controller = new(CreateUserManagerMock().Object, Mock.Of<RoleService>());
+		AdminAccountsController controller = new(CreateUserManagerMock().Object, CreateRoleServiceMock());
 
 		IActionResult result = await controller.RemoveAccount(" ");
 
@@ -41,7 +42,7 @@ public class AdminAccountsControllerTests
 	[Fact]
 	public async Task AssignRole_ReturnsBadRequest_WhenRoleMissing()
 	{
-		AdminAccountsController controller = new(CreateUserManagerMock().Object, Mock.Of<RoleService>());
+		AdminAccountsController controller = new(CreateUserManagerMock().Object, CreateRoleServiceMock());
 
 		IActionResult result = await controller.AssignRole("user-id", " ");
 
@@ -52,7 +53,7 @@ public class AdminAccountsControllerTests
 	[Fact]
 	public async Task RemoveRole_ReturnsBadRequest_WhenRoleMissing()
 	{
-		AdminAccountsController controller = new(CreateUserManagerMock().Object, Mock.Of<RoleService>());
+		AdminAccountsController controller = new(CreateUserManagerMock().Object, CreateRoleServiceMock());
 
 		IActionResult result = await controller.RemoveRole("user-id", " ");
 
@@ -73,5 +74,22 @@ public class AdminAccountsControllerTests
 			null!,
 			null!,
 			null!);
+	}
+
+	private static RoleService CreateRoleServiceMock()
+	{
+		var userManagerMock = CreateUserManagerMock();
+		var roleManagerMock = new Mock<RoleManager<IdentityRole>>(
+			new Mock<IRoleStore<IdentityRole>>().Object,
+			null!,
+			null!,
+			null!,
+			null!);
+		var loggerMock = new Mock<ILogger<RoleService>>();
+
+		return new RoleService(
+			userManagerMock.Object,
+			roleManagerMock.Object,
+			loggerMock.Object);
 	}
 }
