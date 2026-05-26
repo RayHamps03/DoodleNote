@@ -1,0 +1,44 @@
+﻿@using DoodleNote.Features.DoodleUpload.Models;
+@model ConfirmDoodleUploadViewModel;
+
+@{
+    ViewData["Title"] = "Confirm Upload";
+}
+
+<h1>Confirm Upload</h1>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="border rounded p-2 bg-white shadow-sm">
+            <img src="@Model.PreviewUrl" alt="Doodle preview" class="img-fluid" />
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <form method="post" asp-action="ConfirmUpload">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="Token" />
+            <input type="hidden" asp-for="PreviewUrl" />
+
+            <div class="mb-3">
+                <label asp-for="NoteTitle" class="form-label"></label>
+                <input asp-for="NoteTitle" class="form-control" maxlength="25" />
+                <span asp-validation-for="NoteTitle" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4" maxlength="300"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success">Upload as Doodle Note</button>
+            <a class="btn btn-outline-secondary" asp-action="Index">Back</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

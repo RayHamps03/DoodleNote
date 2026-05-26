@@ -81,7 +81,8 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 			NoteTitle = note.NoteTitle,
 			Author = string.Empty, // Not implemented
 			Description = note.Description ?? string.Empty,
-			CreatedDate = note.CreatedDate
+			CreatedDate = note.CreatedDate,
+			ImagePath = note.ImagePath
 		};
 		return View(viewModel);
 	}

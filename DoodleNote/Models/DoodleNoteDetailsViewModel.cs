@@ -10,4 +10,5 @@ public class DoodleNoteDetailsViewModel
     public string Author { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public DateTime CreatedDate { get; set; }
+    public string? ImagePath { get; set; }
 }
