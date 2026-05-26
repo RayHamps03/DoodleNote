@@ -42,7 +42,6 @@ public class IndexModel : PageModel
 
 	public async Task<IActionResult> OnPostUpdateUsernameAsync()
 	{
-		Request.Body.Position = 0;
 		using var reader = new StreamReader(Request.Body);
 		var jsonBody = await reader.ReadToEndAsync();
 
@@ -115,7 +114,6 @@ public class IndexModel : PageModel
 
 	public async Task<IActionResult> OnPostUpdatePhoneAsync()
 	{
-		Request.Body.Position = 0;
 		using var reader = new StreamReader(Request.Body);
 		var jsonBody = await reader.ReadToEndAsync();
 
