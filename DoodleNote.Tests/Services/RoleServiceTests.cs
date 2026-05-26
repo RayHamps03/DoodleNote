@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -13,6 +14,58 @@ namespace DoodleNote.Tests;
 
 public class RoleServiceTests
 {
+	[Fact]
+	public async Task InitializeRolesAsync_CreatesOnlyMissingRoles()
+	{
+		Mock<UserManager<ApplicationUser>> userManagerMock = CreateUserManagerMock();
+		Mock<RoleManager<IdentityRole>> roleManagerMock = CreateRoleManagerMock();
+
+		roleManagerMock.Setup(rm => rm.RoleExistsAsync(RoleNames.User)).ReturnsAsync(true);
+		roleManagerMock.Setup(rm => rm.RoleExistsAsync(RoleNames.Admin)).ReturnsAsync(false);
+		roleManagerMock.Setup(rm => rm.RoleExistsAsync(RoleNames.Owner)).ReturnsAsync(false);
+		roleManagerMock.Setup(rm => rm.CreateAsync(It.IsAny<IdentityRole>())).ReturnsAsync(IdentityResult.Success);
+
+		RoleService service = new(userManagerMock.Object, roleManagerMock.Object, Mock.Of<ILogger<RoleService>>());
+
+		await service.InitializeRolesAsync();
+
+		roleManagerMock.Verify(rm => rm.CreateAsync(It.Is<IdentityRole>(r => r.Name == RoleNames.User)), Times.Never);
+		roleManagerMock.Verify(rm => rm.CreateAsync(It.Is<IdentityRole>(r => r.Name == RoleNames.Admin)), Times.Once);
+		roleManagerMock.Verify(rm => rm.CreateAsync(It.Is<IdentityRole>(r => r.Name == RoleNames.Owner)), Times.Once);
+	}
+
+	[Fact]
+	public async Task InitializeRolesAsync_DoesNotThrow_OnDuplicateRoleNameWhenRoleExistsAfterFailure()
+	{
+		Mock<UserManager<ApplicationUser>> userManagerMock = CreateUserManagerMock();
+		Mock<RoleManager<IdentityRole>> roleManagerMock = CreateRoleManagerMock();
+		Dictionary<string, int> roleExistsChecks = new();
+
+		roleManagerMock
+			.Setup(rm => rm.RoleExistsAsync(It.IsAny<string>()))
+			.ReturnsAsync((string role) =>
+			{
+				roleExistsChecks.TryGetValue(role, out int count);
+				roleExistsChecks[role] = count + 1;
+				return count > 0;
+			});
+
+		roleManagerMock
+			.Setup(rm => rm.CreateAsync(It.IsAny<IdentityRole>()))
+			.ReturnsAsync(IdentityResult.Failed(new IdentityError
+			{
+				Code = "DuplicateRoleName",
+				Description = "Role name is already taken."
+			}));
+
+		RoleService service = new(userManagerMock.Object, roleManagerMock.Object, Mock.Of<ILogger<RoleService>>());
+
+		Exception? exception = await Record.ExceptionAsync(() => service.InitializeRolesAsync());
+
+		Assert.Null(exception);
+		roleManagerMock.Verify(rm => rm.CreateAsync(It.IsAny<IdentityRole>()), Times.Exactly(3));
+	}
+
 	[Fact]
 	public async Task UserHasRoleAsync_ReturnsTrue_WhenUserIsInRole()
 	{

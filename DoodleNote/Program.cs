@@ -43,7 +43,14 @@ else
 app.UseDbInitialization();
 app.UseSecurityHeaders();
 
-app.UseHttpsRedirection();
+string? configuredUrls = builder.Configuration["ASPNETCORE_URLS"];
+bool hasHttpsEndpoint = !string.IsNullOrWhiteSpace(configuredUrls)
+    && configuredUrls.Contains("https://", StringComparison.OrdinalIgnoreCase);
+
+if (hasHttpsEndpoint)
+{
+    app.UseHttpsRedirection();
+}
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

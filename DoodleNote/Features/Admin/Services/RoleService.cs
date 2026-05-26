@@ -23,14 +23,13 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
     public async Task InitializeRolesAsync()
     {
         string[] roles = { RoleNames.User, RoleNames.Admin, RoleNames.Owner };
-        List<string> rolesToCreate = new();
 
-        // Batch check which roles exist
+        // Create only missing roles; tolerate duplicate race conditions across instances.
         foreach (string role in roles)
         {
             if (await _roleManager.RoleExistsAsync(role))
             {
-                rolesToCreate.Add(role);
+                continue;
             }
 
             IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(role));
@@ -40,27 +39,13 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
                 continue;
             }
 
-            foreach (IdentityError error in result.Errors)
-            {
-                _logger.LogError("Failed to create role '{Role}'. Error {Code}: {Description}", role, error.Code, error.Description);
-            }
+            bool roleExistsAfterFailure = await _roleManager.RoleExistsAsync(role);
+            bool isDuplicateRoleError = result.Errors.Any(error =>
+                string.Equals(error.Code, "DuplicateRoleName", StringComparison.OrdinalIgnoreCase));
 
-            if (await _roleManager.RoleExistsAsync(role))
+            if (isDuplicateRoleError && roleExistsAfterFailure)
             {
-                _logger.LogWarning("Role '{Role}' already exists after a failed create attempt. Continuing initialization.", role);
-                continue;
-            }
-
-            throw new InvalidOperationException($"Failed to create required role '{role}'. See logs for Identity errors.");
-        }
-
-        // Create missing roles
-        foreach (string role in rolesToCreate)
-        {
-            IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(role));
-            if (result.Succeeded)
-            {
-                _logger.LogInformation("Role '{Role}' created successfully.", role);
+                _logger.LogInformation("Role '{Role}' already exists. Continuing initialization.", role);
                 continue;
             }
 
@@ -69,7 +54,7 @@ public class RoleService(UserManager<ApplicationUser> userManager, RoleManager<I
                 _logger.LogError("Failed to create role '{Role}'. Error {Code}: {Description}", role, error.Code, error.Description);
             }
 
-            if (await _roleManager.RoleExistsAsync(role))
+            if (roleExistsAfterFailure)
             {
                 _logger.LogWarning("Role '{Role}' already exists after a failed create attempt. Continuing initialization.", role);
                 continue;
