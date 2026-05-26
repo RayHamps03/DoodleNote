@@ -26,14 +26,18 @@ public class DoodleController(ApplicationDbContext context, IWebHostEnvironment 
 			return BadRequest("Invalid image format. Expected a PNG data URL.");
 		}
 
+		// Generate a unique token for this upload session
 		string token = Guid.NewGuid().ToString("N");
 
+		// Save the PNG bytes to a temporary location with the token as the filename
 		string pendingDir = Path.Combine(_env.WebRootPath, "uploads", "pending");
 		Directory.CreateDirectory(pendingDir);
 
+		// Save the file as {token}.png in the pending directory
 		string pendingFilePath = Path.Combine(pendingDir, $"{token}.png");
 		await System.IO.File.WriteAllBytesAsync(pendingFilePath, pngBytes);
 
+		// Return the token to the client so they can confirm the upload
 		string redirectUrl = Url.Action(nameof(ConfirmUpload), new { token }) ?? $"/Doodle/ConfirmUpload?token={token}";
 		return Ok(new { redirectUrl });
 	}
@@ -46,12 +50,14 @@ public class DoodleController(ApplicationDbContext context, IWebHostEnvironment 
 			return BadRequest("Invalid token.");
 		}
 
+		// Check if the pending file exists for the given token
 		string pendingFilePath = Path.Combine(_env.WebRootPath, "uploads", "pending", $"{token}.png");
 		if (!System.IO.File.Exists(pendingFilePath))
 		{
 			return NotFound("Pending upload not found (it may have expired).");
 		}
 
+		// Prepare the view model with the token and a URL to preview the uploaded image
 		ConfirmDoodleUploadViewModel vm = new()
 		{
 			Token = token,
@@ -72,17 +78,20 @@ public class DoodleController(ApplicationDbContext context, IWebHostEnvironment 
 			return View(model);
 		}
 
+
 		if (!Guid.TryParse(model.Token, out _))
 		{
 			return BadRequest("Invalid token.");
 		}
 
+		// Check if the pending file exists for the given token
 		string pendingFilePath = Path.Combine(_env.WebRootPath, "uploads", "pending", $"{model.Token}.png");
 		if (!System.IO.File.Exists(pendingFilePath))
 		{
 			return NotFound("Pending upload not found (it may have expired).");
 		}
 
+		// Create a new Doodle Note record in the database
 		DoodleNote.Models.DoodleNote note = new()
 		{
 			NoteTitle = model.NoteTitle,
@@ -93,6 +102,7 @@ public class DoodleController(ApplicationDbContext context, IWebHostEnvironment 
 		_context.DoodleNotes.Add(note);
 		await _context.SaveChangesAsync();
 
+		// Redirect user to uploaded Doodle Note page
 		string doodlesDir = Path.Combine(_env.WebRootPath, "uploads", "doodles");
 		Directory.CreateDirectory(doodlesDir);
 
@@ -107,17 +117,26 @@ public class DoodleController(ApplicationDbContext context, IWebHostEnvironment 
 		return RedirectToAction("Details", "DoodleNotes", new { id = note.NoteId });
 	}
 
+	/// <summary>
+	/// Helper method to parse a PNG data URL and extract the byte array. 
+	/// </summary>
+	/// <param name="dataUrl">The data URL string expected to be in the format "data:image/png;base64,..."</param>
+	/// <param name="pngBytes">The output byte array containing the PNG data if parsing is successful; otherwise, an empty array.</param>
+	/// <returns>Returns false if the format is invalid or if decoding fails.</returns>
 	private static bool TryParsePngDataUrl(string dataUrl, out byte[] pngBytes)
 	{
 		pngBytes = [];
 
+		// Basic validation for PNG data URL format
 		const string prefix = "data:image/png;base64,";
 		if (!dataUrl.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
 		{
 			return false;
 		}
 
+		// Extract the base64 portion of the data URL
 		string base64 = dataUrl[prefix.Length..];
+		// Attempt to decode the base64 string into bytes
 		try
 		{
 			pngBytes = Convert.FromBase64String(base64);
