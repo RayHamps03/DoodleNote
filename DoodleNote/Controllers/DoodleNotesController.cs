@@ -44,26 +44,6 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		});
 	}
 
-	/// <summary>
-	/// Returns the Create view form.
-	/// </summary>
-	public IActionResult Create() => View();
-
-	/// <summary>
-	/// Saves a new note to the database and redirects to Index.
-	/// </summary>
-	[HttpPost]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> Create([Bind("NoteTitle,Description")] DoodleNote.Models.DoodleNote note)
-	{
-		if (!ModelState.IsValid)
-			return View(note);
-
-		note.CreatedDate = DateTime.Now;
-		_context.DoodleNotes.Add(note);
-		await _context.SaveChangesAsync();
-		return RedirectToAction(nameof(Index));
-	}
 
 	/// <summary>
 	/// Displays detailed view of a single note with formatted display model.
