@@ -98,8 +98,17 @@ public class IndexModel : PageModel
 			}
 
 			_logger.LogInformation("Username updated successfully for user {UserId}", user.Id);
-			await _signInManager.RefreshSignInAsync(user);
-			return new JsonResult(new { message = "Username updated successfully.", username = user.UserName });
+
+			// Reload the user from the store to ensure normalized properties are updated
+			var updatedUser = await _userManager.FindByIdAsync(user.Id);
+			if (updatedUser == null)
+			{
+				_logger.LogError("User not found after username update: {UserId}", user.Id);
+				return new JsonResult(new { message = "Username updated but failed to refresh sign-in. Please re-login." }) { StatusCode = 500 };
+			}
+
+			await _signInManager.RefreshSignInAsync(updatedUser);
+			return new JsonResult(new { message = "Username updated successfully.", username = updatedUser.UserName });
 		}
 		catch (JsonException)
 		{

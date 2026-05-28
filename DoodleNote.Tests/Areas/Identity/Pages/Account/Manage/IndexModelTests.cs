@@ -37,6 +37,7 @@ public class IndexModelTests
             .Setup(manager => manager.SetUserNameAsync(user, "new_name"))
             .ReturnsAsync(IdentityResult.Success)
             .Callback<ApplicationUser, string>((targetUser, newUserName) => targetUser.UserName = newUserName);
+        userManagerMock.Setup(manager => manager.FindByIdAsync(user.Id)).ReturnsAsync(user);
 
         var signInManagerMock = CreateSignInManagerMock(userManagerMock.Object);
         signInManagerMock.Setup(manager => manager.RefreshSignInAsync(user)).Returns(Task.CompletedTask);

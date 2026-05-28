@@ -59,3 +59,6 @@ app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Inde
 app.MapRazorPages().WithStaticAssets();
 
 app.Run();
+
+// Expose Program for WebApplicationFactory in integration tests
+public partial class Program { }
