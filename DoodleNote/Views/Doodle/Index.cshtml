@@ -197,7 +197,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'RequestVerificationToken': antiForgeryToken
+                        'X-CSRF-TOKEN': antiForgeryToken
                     },
                     body: JSON.stringify({ pngDataUrl: dataUrl })
                 });
