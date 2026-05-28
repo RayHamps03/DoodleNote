@@ -7,7 +7,9 @@
 <h1>Doodle Notes</h1>
 
 <p>
-    <a class="btn btn-bright-green" asp-action="Create">Create Note</a>
+    <a class="btn btn-bright-green" 
+    asp-controller="Doodle"
+    asp-action="Index">Create Note</a>
 </p>
 
 @if (!Model.Notes.Any())
