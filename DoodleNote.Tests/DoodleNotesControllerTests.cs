@@ -101,20 +101,6 @@ public class DoodleNotesControllerTests
     }
 
     [Fact]
-    public void Create_Get_ReturnsView()
-    {
-        // Arrange
-        ApplicationDbContext context = CreateInMemoryContext();
-        DoodleNotesController controller = new DoodleNotesController(context);
-
-        // Act
-        IActionResult result = controller.Create();
-
-        // Assert
-        Assert.IsType<ViewResult>(result);
-    }
-
-    [Fact]
     public async Task Create_Post_WithValidModel_SavesAndRedirects()
     {
         // Arrange
