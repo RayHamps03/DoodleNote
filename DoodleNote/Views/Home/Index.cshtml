@@ -10,8 +10,15 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Welcome!</h1>
+
+    <div class="alert alert-dark" role="alert">
+        This website is currently in production.
+    </div>
+
+    <div class="mt-4">
+        <a href="@Url.Action("Index", "Doodle")" class="btn btn-success btn-lg" role="button">Create your first doodle</a>
+    </div>
 
     @if (User?.Identity?.IsAuthenticated ?? false)
     {
