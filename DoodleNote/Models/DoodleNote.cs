@@ -23,18 +23,7 @@ public class DoodleNote
 	/// </summary>
 	[Required]
 	[StringLength(25, MinimumLength = 1, ErrorMessage = "Title must be between 1 and 25 characters.")]
-	public required string NoteTitle { get; set; }
-
-	/// <summary>
-	/// The date the doodle note was created.
-	/// </summary>
-	[DataType(DataType.Date)]
-	[Column(TypeName = "date")]
-	public DateTime CreatedDate
-	{
-		get => _createdDate;
-		set => _createdDate = value.Date;
-	}
+	private string NoteTitle { get; set; }
 
 	/// <summary>
 	/// The description of the doodle note.
@@ -47,14 +36,20 @@ public class DoodleNote
 	/// <summary>
 	/// Factory method to create a new DoodleNote with normalized date handling.
 	/// </summary>
-	public static DoodleNote Create(string noteTitle, string? description, DateTime dateTime, string? imagePath)
+	public static DoodleNote Create(string noteTitle, string? description, string? imagePath)
 	{
 		return new DoodleNote
 		{
 			NoteTitle = noteTitle,
 			Description = description,
-			CreatedDate = dateTime,
+			_createdDate = DateTime.Now,
 			ImagePath = imagePath
 		};
 	}
+
+	public string GetNoteTitle()
+	{
+		return NoteTitle;
+	}
+
 }
