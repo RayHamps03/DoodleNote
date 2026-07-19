@@ -52,4 +52,9 @@ public class DoodleNote
 		return NoteTitle;
 	}
 
+	public DateTime GetDateTime()
+	{
+		return _createdDate;
+	}
+
 }
