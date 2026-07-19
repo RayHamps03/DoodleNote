@@ -93,7 +93,7 @@ public class DoodleController(ApplicationDbContext context, IWebHostEnvironment 
 		}
 
 		// Create a new Doodle Note record in the database
-		DoodleNote.Models.DoodleNote note = ConfirmDoodleUploadViewModel.Create(model.NoteTitle, model.Description, null);
+		DoodleNote.Models.DoodleNote note = ConfirmDoodleUploadViewModel.Create(model.NoteTitle, model.Description);
 
 		_context.DoodleNotes.Add(note);
 		await _context.SaveChangesAsync();
