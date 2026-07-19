@@ -9,7 +9,7 @@
     <input type="hidden" name="NoteId" value="@Model.NoteId" />
     <div class="mb-3">
         <label for="noteTitle" class="form-label">Note Title</label>
-        <input id="noteTitle" name="NoteTitle" class="form-control" maxlength="25" value="@Model.NoteTitle" required />
+        <input id="noteTitle" name="NoteTitle" class="form-control" maxlength="25" value="@Model.GetNoteTitle()" required />
     </div>
 
     <div class="mb-3">
