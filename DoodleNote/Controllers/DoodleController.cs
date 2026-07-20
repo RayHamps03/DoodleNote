@@ -107,7 +107,7 @@ public class DoodleController(ApplicationDbContext context, IWebHostEnvironment 
 
 		System.IO.File.Move(pendingFilePath, finalFilePath, overwrite: true);
 
-		note.ImagePath = $"/uploads/doodles/{finalFileName}";
+		note.AddImagePath($"/uploads/doodles/{finalFileName}");
 		await _context.SaveChangesAsync();
 
 		return RedirectToAction("Details", "DoodleNotes", new { id = note.NoteId });

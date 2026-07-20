@@ -26,4 +26,9 @@ public sealed class ConfirmDoodleUploadViewModel
 	{
 		return DoodleNote.Models.DoodleNote.Create(noteTitle, description, null);
 	}
+
+	public void AddImagePath(string imagePath)
+	{
+		AddImagePath(imagePath);
+	}
 }
