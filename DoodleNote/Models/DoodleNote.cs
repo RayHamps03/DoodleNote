@@ -21,9 +21,8 @@ public class DoodleNote
 	/// <summary>
 	/// The title of the doodle note.
 	/// </summary>
-	[Required]
 	[StringLength(25, MinimumLength = 1, ErrorMessage = "Title must be between 1 and 25 characters.")]
-	public string NoteTitle { get; private set; }
+	public string NoteTitle { get; private set; } = string.Empty;
 
 	/// <summary>
 	/// The description of the doodle note.
@@ -38,6 +37,7 @@ public class DoodleNote
 	/// </summary>
 	public static DoodleNote Create(string noteTitle, string? description, string? imagePath)
 	{
+		ArgumentNullException.ThrowIfNull(noteTitle);
 		return new DoodleNote
 		{
 			NoteTitle = noteTitle,
@@ -45,6 +45,11 @@ public class DoodleNote
 			CreatedDate = DateTime.Now,
 			ImagePath = imagePath
 		};
+	}
+
+	public void AddImagePath(string imagePath)
+	{
+		ImagePath = imagePath;
 	}
 
 
