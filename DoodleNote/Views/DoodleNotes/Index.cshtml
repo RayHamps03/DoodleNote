@@ -31,9 +31,9 @@ else
         {
             <tr>
                 <td>
-                    <a asp-action="Details" asp-route-id="@note.NoteId">@note.GetNoteTitle()</a>
+                    <a asp-action="Details" asp-route-id="@note.NoteId">@note.NoteTitle</a>
                 </td>
-                <td>@note.GetDateTime().ToString("yyyy-MM-dd")</td>
+                <td>@note.CreatedDate.ToString("yyyy-MM-dd")</td>
                 <td>
                     <a class="btn btn-sm btn-warning" asp-action="Edit" asp-route-id="@note.NoteId">Edit</a>
                 </td>

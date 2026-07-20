@@ -29,7 +29,7 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		int skip = (page - 1) * PageSize;
 
 		List<DoodleNote.Models.DoodleNote> notes = await _context.DoodleNotes
-			.OrderByDescending(n => n.GetDateTime())
+			.OrderByDescending(n => n.CreatedDate)
 			.ThenBy(n => n.NoteId)
 			.Skip((page - 1) * pageSize)
 			.Take(pageSize)
@@ -70,10 +70,10 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		DoodleNoteDetailsViewModel viewModel = new()
 		{
 			NoteId = note.NoteId,
-			NoteTitle = note.GetNoteTitle(),
+			NoteTitle = note.NoteTitle,
 			Author = string.Empty, // Not implemented
 			Description = note.Description ?? string.Empty,
-			CreatedDate = note.GetDateTime(),
+			CreatedDate = note.CreatedDate,
 			ImagePath = note.ImagePath
 		};
 		return View(viewModel);
