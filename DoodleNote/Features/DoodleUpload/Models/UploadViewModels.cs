@@ -21,4 +21,14 @@ public sealed class ConfirmDoodleUploadViewModel
 
 	[StringLength(300)]
 	public string? Description { get; set; }
+
+	public static DoodleNote.Models.DoodleNote Create(string noteTitle, string? description)
+	{
+		return DoodleNote.Models.DoodleNote.Create(noteTitle, description, null);
+	}
+
+	public void AddImagePath(string imagePath)
+	{
+		AddImagePath(imagePath);
+	}
 }

@@ -50,7 +50,6 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 	{
 		if (ModelState.IsValid)
 		{
-			note.CreatedDate = DateTime.Now;
 			_context.DoodleNotes.Add(note);
 			await _context.SaveChangesAsync();
 			return RedirectToAction(nameof(Index));

@@ -2,6 +2,7 @@
 using DoodleNote.Features.DoodleUpload.Models;
 using DoodleNote.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace DoodleNote.Controllers;
 
@@ -92,12 +93,7 @@ public class DoodleController(ApplicationDbContext context, IWebHostEnvironment 
 		}
 
 		// Create a new Doodle Note record in the database
-		DoodleNote.Models.DoodleNote note = new()
-		{
-			NoteTitle = model.NoteTitle,
-			Description = model.Description,
-			CreatedDate = DateTime.Now
-		};
+		DoodleNote.Models.DoodleNote note = ConfirmDoodleUploadViewModel.Create(model.NoteTitle, model.Description);
 
 		_context.DoodleNotes.Add(note);
 		await _context.SaveChangesAsync();
@@ -111,7 +107,7 @@ public class DoodleController(ApplicationDbContext context, IWebHostEnvironment 
 
 		System.IO.File.Move(pendingFilePath, finalFilePath, overwrite: true);
 
-		note.ImagePath = $"/uploads/doodles/{finalFileName}";
+		note.AddImagePath($"/uploads/doodles/{finalFileName}");
 		await _context.SaveChangesAsync();
 
 		return RedirectToAction("Details", "DoodleNotes", new { id = note.NoteId });
