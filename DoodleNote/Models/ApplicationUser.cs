@@ -9,4 +9,5 @@ namespace DoodleNote.Models;
 /// </summary>
 public class ApplicationUser : IdentityUser
 {
+	public ICollection<DoodleNote>? Notes { get; set; }
 }
