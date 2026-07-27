@@ -32,7 +32,7 @@ public class DoodleNote
 
 	public string? ImagePath { get; private set; }
 
-	public int UserId { get; private set; }
+	public string? UserId { get; private set; }
 	
 	public ApplicationUser? User { get; private set; }
 
