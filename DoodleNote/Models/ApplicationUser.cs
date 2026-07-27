@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace DoodleNote.Features.Admin.Models;
+namespace DoodleNote.Models;
 
 /// <summary>
 /// Custom user class extending IdentityUser for application-specific user management.
