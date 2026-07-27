@@ -1,5 +1,6 @@
 using DoodleNote.Data;
 using DoodleNote.Extensions;
+using DoodleNote.Models;
 using DoodleNote.Features.Admin.Models;
 using DoodleNote.Features.Admin.Services;
 using Microsoft.AspNetCore.Identity;
