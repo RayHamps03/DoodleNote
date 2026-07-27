@@ -1,5 +1,6 @@
 using DoodleNote.Features.Admin.Constants;
 using DoodleNote.Features.Admin.Models;
+using DoodleNote.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
