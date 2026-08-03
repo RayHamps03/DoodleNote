@@ -8,10 +8,11 @@ using System.Security.Claims;
 
 namespace DoodleNote.Controllers;
 
-public class DoodleController(ApplicationDbContext context, IWebHostEnvironment env) : Controller
+public class DoodleController(ApplicationDbContext context, IWebHostEnvironment env, UserManager<ApplicationUser> userManager) : Controller
 {
 	private readonly ApplicationDbContext _context = context;
 	private readonly IWebHostEnvironment _env = env;
+	private readonly UserManager<ApplicationUser> _userManager = userManager;
 
 	public IActionResult Index() => View();
 
@@ -94,9 +95,15 @@ public class DoodleController(ApplicationDbContext context, IWebHostEnvironment 
 			return NotFound("Pending upload not found (it may have expired).");
 		}
 
-		// Retrieve the current user's ID
-		string userId = User.FindFirstValue(ClaimTypes.NameIdentifier) 
-			?? throw new InvalidOperationException("User ID claim not found.");
+		// Retrieve the current user and their ID
+		ApplicationUser? user = await _userManager.GetUserAsync(User);
+
+		if (user is null)
+		{
+			return Unauthorized();
+		}
+
+		string userId = user.Id;
 
 		// Create a new Doodle Note record in the database
 		DoodleNote.Models.DoodleNote note = ConfirmDoodleUploadViewModel.Create(model.NoteTitle, model.Description);
