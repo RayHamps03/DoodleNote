@@ -56,9 +56,8 @@ public class DoodleNote
 		ImagePath = imagePath;
 	}
 
-	public void SetUser(ApplicationUser user, string userId)
+	public void SetUser(string userId)
 	{
-		User = user;
 		UserId = userId;
 	}
 }
