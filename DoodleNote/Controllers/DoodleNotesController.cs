@@ -71,7 +71,10 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		{
 			NoteId = note.NoteId,
 			NoteTitle = note.NoteTitle,
-			Author = string.Empty, // Not implemented
+			Author = await _context.Users
+				.Where(u => u.Id == note.UserId)
+				.Select(u => u.UserName)
+				.FirstOrDefaultAsync() ?? "Unknown",
 			Description = note.Description ?? string.Empty,
 			CreatedDate = note.CreatedDate,
 			ImagePath = note.ImagePath

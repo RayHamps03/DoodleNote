@@ -32,6 +32,10 @@ public class DoodleNote
 
 	public string? ImagePath { get; private set; }
 
+	public string? UserId { get; private set; }
+	
+	public ApplicationUser? User { get; private set; }
+
 	/// <summary>
 	/// Factory method to create a new DoodleNote with normalized date handling.
 	/// </summary>
@@ -52,5 +56,8 @@ public class DoodleNote
 		ImagePath = imagePath;
 	}
 
-
+	public void SetUser(string userId)
+	{
+		UserId = userId;
+	}
 }

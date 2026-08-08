@@ -1,6 +1,7 @@
 using DoodleNote.Features.Admin.Constants;
 using DoodleNote.Features.Admin.Models;
 using DoodleNote.Features.Admin.Services;
+using DoodleNote.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

@@ -1,15 +1,18 @@
 ﻿using DoodleNote.Data;
 using DoodleNote.Features.DoodleUpload.Models;
 using DoodleNote.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Security.Claims;
 
 namespace DoodleNote.Controllers;
 
-public class DoodleController(ApplicationDbContext context, IWebHostEnvironment env) : Controller
+public class DoodleController(ApplicationDbContext context, IWebHostEnvironment env, UserManager<ApplicationUser> userManager) : Controller
 {
 	private readonly ApplicationDbContext _context = context;
 	private readonly IWebHostEnvironment _env = env;
+	private readonly UserManager<ApplicationUser> _userManager = userManager;
 
 	public IActionResult Index() => View();
 
@@ -92,8 +95,19 @@ public class DoodleController(ApplicationDbContext context, IWebHostEnvironment 
 			return NotFound("Pending upload not found (it may have expired).");
 		}
 
+		// Retrieve the current user and their ID
+		ApplicationUser? user = await _userManager.GetUserAsync(User);
+
+		if (user is null)
+		{
+			return Unauthorized();
+		}
+
+		string userId = user.Id;
+
 		// Create a new Doodle Note record in the database
 		DoodleNote.Models.DoodleNote note = ConfirmDoodleUploadViewModel.Create(model.NoteTitle, model.Description);
+		note.SetUser(userId);
 
 		_context.DoodleNotes.Add(note);
 		await _context.SaveChangesAsync();
