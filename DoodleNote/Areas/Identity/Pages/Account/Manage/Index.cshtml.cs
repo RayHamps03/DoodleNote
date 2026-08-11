@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using DoodleNote.Features.Admin.Models;
+using DoodleNote.Models;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
