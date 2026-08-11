@@ -1,8 +1,13 @@
 ﻿using DoodleNote.Features.Admin.Models;
+using System.ComponentModel.DataAnnotations;
 namespace DoodleNote.Models;
 
 public class UserLike
 {
+	[Key]
+	[Required]
+	public int Id { get; set; } 
+
 	// The UserId associated with the user who liked the note.
 	public string UserId { get; set; } = string.Empty;
 
