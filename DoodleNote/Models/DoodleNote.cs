@@ -32,6 +32,8 @@ public class DoodleNote
 
 	public string? ImagePath { get; private set; }
 
+	public ICollection<UserLike>? Likes { get; set; }
+
 	/// <summary>
 	/// Factory method to create a new DoodleNote with normalized date handling.
 	/// </summary>
