@@ -20,6 +20,13 @@
     <div id="note-description" class="form-control" style="min-height: 80px; background: #f8f9fa;">@Model.Description</div>
 </div>
 
+<div class="flex items-center gap-3">
+    <form asp-controller="DoodleNotes" asp-action="ToggleNoteLike" method="post">
+        <input type="hidden" name="NoteId" value="@Model.NoteId" />
+        <button type="submit" class="btn btn-outline-primary">Like</button>
+    </form>
+</div>
+
 <a class="btn btn-secondary" asp-action="Index">Back to List</a>
 
 
