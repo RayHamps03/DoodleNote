@@ -1,7 +1,9 @@
 using DoodleNote.Data;
+using DoodleNote.Features.DoodleNotes.Models;
 using DoodleNote.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace DoodleNote.Controllers;
 
@@ -117,6 +119,27 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		}
 		return RedirectToAction(nameof(Index));
 	}
+
+	public async Task<IActionResult> ToggleNoteLike(NoteLikeViewModel model)
+	{
+		string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+		UserLike? like = await _context.UserLikes
+			.FirstOrDefaultAsync(l => l.NoteId == model.NoteId && l.UserId == UserId);
+
+		if (like == null)
+		{
+			_context.UserLikes.Add(new UserLike { NoteId = model.NoteId, UserId = UserId });
+		}
+		else
+		{
+			_context.UserLikes.Remove(like);
+		}
+
+		await _context.SaveChangesAsync();
+		return RedirectToAction(nameof(Index));
+	}
+
 
 	/// <summary>
 	/// Checks if a note exists by NoteId.
