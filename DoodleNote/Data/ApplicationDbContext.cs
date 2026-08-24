@@ -16,6 +16,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 	/// </summary>
 	public DbSet<Models.DoodleNote> DoodleNotes { get; set; }
 
+	public DbSet<UserLike> UserLikes { get; set; }
+
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
 		base.OnModelCreating(builder);
@@ -26,6 +28,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			.WithMany(u => u.Notes)
 			.HasForeignKey(p => p.UserId)
 			.OnDelete(DeleteBehavior.Cascade);
+
+		builder.Entity<UserLike>()
+			.HasOne(l => l.Note)
+			.WithMany(n => n.Likes)
+			.HasForeignKey(l => l.NoteId)
+			.OnDelete(DeleteBehavior.Cascade);
+
+		builder.Entity<UserLike>()
+			.HasOne(l => l.User)
+			.WithMany(u => u.Likes)
+			.HasForeignKey(l => l.UserId)
+			.OnDelete(DeleteBehavior.Restrict);
 	}
 }
 

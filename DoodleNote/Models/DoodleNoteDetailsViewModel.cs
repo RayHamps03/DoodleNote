@@ -11,4 +11,6 @@ public class DoodleNoteDetailsViewModel
     public string Description { get; set; } = string.Empty;
     public DateTime CreatedDate { get; set; }
     public string? ImagePath { get; set; }
+    public int LikeCount { get; set; }
+    public bool IsLikedByCurrentUser { get; set; }
 }

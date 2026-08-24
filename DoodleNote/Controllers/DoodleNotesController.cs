@@ -1,7 +1,10 @@
 using DoodleNote.Data;
+using DoodleNote.Features.DoodleNotes.Models;
 using DoodleNote.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
+using System.Security.Claims;
 
 namespace DoodleNote.Controllers;
 
@@ -77,7 +80,10 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 				.FirstOrDefaultAsync() ?? "Unknown",
 			Description = note.Description ?? string.Empty,
 			CreatedDate = note.CreatedDate,
-			ImagePath = note.ImagePath
+			ImagePath = note.ImagePath,
+			LikeCount = await _context.UserLikes.CountAsync(l => l.NoteId == note.NoteId),
+			IsLikedByCurrentUser = await _context.UserLikes
+				.AnyAsync(l => l.NoteId == note.NoteId && l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
 		};
 		return View(viewModel);
 	}
@@ -117,6 +123,28 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		}
 		return RedirectToAction(nameof(Index));
 	}
+
+	[HttpPost]
+	public async Task<IActionResult> ToggleNoteLike(NoteLikeViewModel model)
+	{
+		string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+		UserLike? like = await _context.UserLikes
+			.FirstOrDefaultAsync(l => l.NoteId == model.NoteId && l.UserId == UserId);
+
+		if (like == null)
+		{
+			_context.UserLikes.Add(new UserLike { NoteId = model.NoteId, UserId = UserId });
+		}
+		else
+		{
+			_context.UserLikes.Remove(like);
+		}
+
+		await _context.SaveChangesAsync();
+		return NoContent();
+	}
+
 
 	/// <summary>
 	/// Checks if a note exists by NoteId.

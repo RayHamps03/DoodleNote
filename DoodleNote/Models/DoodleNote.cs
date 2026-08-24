@@ -32,6 +32,8 @@ public class DoodleNote
 
 	public string? ImagePath { get; private set; }
 
+	public ICollection<UserLike>? Likes { get; set; }
+
 	public string? UserId { get; private set; }
 	
 	public ApplicationUser? User { get; private set; }
