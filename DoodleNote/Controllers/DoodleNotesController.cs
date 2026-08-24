@@ -3,6 +3,7 @@ using DoodleNote.Features.DoodleNotes.Models;
 using DoodleNote.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 
 namespace DoodleNote.Controllers;
@@ -120,6 +121,7 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		return RedirectToAction(nameof(Index));
 	}
 
+	[HttpPost]
 	public async Task<IActionResult> ToggleNoteLike(NoteLikeViewModel model)
 	{
 		string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -137,7 +139,7 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		}
 
 		await _context.SaveChangesAsync();
-		return RedirectToAction(nameof(Index));
+		return NoContent();
 	}
 
 
