@@ -2,8 +2,10 @@
 
 public class UserComment
 {
-	// Primary key
+	// Unique identifier for the comment
 	public int CommentId { get; set; }
+	// Text to be displayed as the comment
+	public string CommentText { get; set; } = string.Empty;
 	// Foreign key to ApplicationUser
 	public required string UserId { get; set; }
 	// Foreign key to DoodleNote
@@ -13,8 +15,7 @@ public class UserComment
 	// ApplicationUser navigation property
 	public ApplicationUser? User { get; set; }
 	// DoodleNote navigation property
-	public DoodleNote Note { get; set; } 
+	public DoodleNote? Note { get; set; } 
 
-	public 
 
 }
