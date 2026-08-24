@@ -127,7 +127,7 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 	[HttpPost]
 	public async Task<IActionResult> ToggleNoteLike(NoteLikeViewModel model)
 	{
-		string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		string? UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
 		UserLike? like = await _context.UserLikes
 			.FirstOrDefaultAsync(l => l.NoteId == model.NoteId && l.UserId == UserId);
@@ -145,6 +145,23 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		return NoContent();
 	}
 
+	public async Task<IActionResult> AddComment(int noteId, string commentText)
+	{
+		if (string.IsNullOrWhiteSpace(commentText))
+			return BadRequest("Comment text cannot be empty.");
+		string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		if (userId == null)
+			return Unauthorized();
+		UserComment comment = new()
+		{
+			NoteId = noteId,
+			UserId = userId,
+			CommentText = commentText
+		};
+		_context.UserComments.Add(comment);
+		await _context.SaveChangesAsync();
+		return RedirectToAction(nameof(Details), new { id = noteId });
+	}
 
 	/// <summary>
 	/// Checks if a note exists by NoteId.
