@@ -29,6 +29,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			.HasForeignKey(p => p.UserId)
 			.OnDelete(DeleteBehavior.Cascade);
 
+
+		// UserLike configuration
 		builder.Entity<UserLike>()
 			.HasOne(l => l.Note)
 			.WithMany(n => n.Likes)
@@ -39,6 +41,19 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			.HasOne(l => l.User)
 			.WithMany(u => u.Likes)
 			.HasForeignKey(l => l.UserId)
+			.OnDelete(DeleteBehavior.Restrict);
+
+		// UserComment configuration
+		builder.Entity<UserComment>()
+			.HasOne(c => c.Note)
+			.WithMany(n => n.Comments)
+			.HasForeignKey(c => c.NoteId)
+			.OnDelete(DeleteBehavior.Cascade);
+
+		builder.Entity<UserComment>()
+			.HasOne(c => c.User)
+			.WithMany(u => u.Comments)
+			.HasForeignKey(c => c.UserId)
 			.OnDelete(DeleteBehavior.Restrict);
 	}
 }
