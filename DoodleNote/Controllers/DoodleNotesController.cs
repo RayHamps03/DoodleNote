@@ -80,7 +80,10 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 				.FirstOrDefaultAsync() ?? "Unknown",
 			Description = note.Description ?? string.Empty,
 			CreatedDate = note.CreatedDate,
-			ImagePath = note.ImagePath
+			ImagePath = note.ImagePath,
+			LikeCount = await _context.UserLikes.CountAsync(l => l.NoteId == note.NoteId),
+			IsLikedByCurrentUser = await _context.UserLikes
+				.AnyAsync(l => l.NoteId == note.NoteId && l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
 		};
 		return View(viewModel);
 	}

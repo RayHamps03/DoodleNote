@@ -23,7 +23,19 @@
 <div class="flex items-center gap-3">
     <form asp-controller="DoodleNotes" asp-action="ToggleNoteLike" method="post">
         <input type="hidden" name="NoteId" value="@Model.NoteId" />
-        <button type="submit" class="btn btn-outline-primary">Like</button>
+        <button type="submit" class="btn @(Model.IsLikedByCurrentUser ? "btn-primary" : "btn-outline-primary")">
+            @if (Model.IsLikedByCurrentUser)
+            {
+                <span aria-hidden="true">&#9829;</span>
+                <span>Liked</span>
+            }
+            else
+            {
+                <span aria-hidden="true">&#9825;</span>
+                <span>Like</span>
+            }
+            <span class="badge bg-secondary ms-1">@Model.LikeCount</span>
+        </button>
     </form>
 </div>
 
