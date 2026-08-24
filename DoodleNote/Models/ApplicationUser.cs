@@ -12,4 +12,6 @@ public class ApplicationUser : IdentityUser
 	public ICollection<DoodleNote>? Notes { get; set; }
 
 	public ICollection<UserLike>? Likes { get; set; }
+
+	public ICollection<UserComment>? Comments { get; set; }
 }
