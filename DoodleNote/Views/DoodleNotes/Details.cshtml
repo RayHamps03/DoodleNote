@@ -39,6 +39,50 @@
     </form>
 </div>
 
+<section class="mt-4" aria-labelledby="comments-heading">
+    <h2 id="comments-heading" class="h5 mb-3">
+        Comments
+        <span class="badge bg-secondary ms-1">@Model.Comments.Count</span>
+    </h2>
+
+    <form asp-controller="DoodleNotes" asp-action="AddComment" method="post" class="mb-4">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="noteId" value="@Model.NoteId" />
+        <div class="mb-2">
+            <label for="new-comment" class="form-label">Add a comment</label>
+            <textarea id="new-comment"
+                      name="commentText"
+                      class="form-control"
+                      rows="3"
+                      maxlength="300"
+                      placeholder="Write your comment..."
+                      required></textarea>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Up to 300 characters.</small>
+            <button type="submit" class="btn btn-primary">Post comment</button>
+        </div>
+    </form>
+
+    @if (Model.Comments.Count == 0)
+    {
+        <p class="text-muted">No comments yet. Be the first to comment.</p>
+    }
+    else
+    {
+        <ul class="list-unstyled mb-0">
+            @foreach (var comment in Model.Comments)
+            {
+                <li class="mb-3 pb-3 border-bottom">
+                    <div class="fw-semibold">@comment.Author</div>
+                    <div class="text-muted small mb-1">#@comment.CommentId</div>
+                    <div class="text-break">@comment.CommentText</div>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
 <a class="btn btn-secondary" asp-action="Index">Back to List</a>
 
 

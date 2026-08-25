@@ -70,6 +70,21 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 			.FirstOrDefaultAsync(n => n.NoteId == id);
 		if (note == null) return NotFound();
 
+		List<CommentViewModel> comments = await _context.UserComments
+			.AsNoTracking()
+			.Where(c => c.NoteId == note.NoteId)
+			.OrderByDescending(c => c.CommentId)
+			.Select(c => new CommentViewModel
+			{
+				CommentId = c.CommentId,
+				CommentText = c.CommentText,
+				Author = _context.Users
+					.Where(u => u.Id == c.UserId)
+					.Select(u => u.UserName)
+					.FirstOrDefault() ?? "Unknown"
+			})
+			.ToListAsync();
+
 		DoodleNoteDetailsViewModel viewModel = new()
 		{
 			NoteId = note.NoteId,
@@ -83,7 +98,8 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 			ImagePath = note.ImagePath,
 			LikeCount = await _context.UserLikes.CountAsync(l => l.NoteId == note.NoteId),
 			IsLikedByCurrentUser = await _context.UserLikes
-				.AnyAsync(l => l.NoteId == note.NoteId && l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+				.AnyAsync(l => l.NoteId == note.NoteId && l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)),
+			Comments = comments
 		};
 		return View(viewModel);
 	}
