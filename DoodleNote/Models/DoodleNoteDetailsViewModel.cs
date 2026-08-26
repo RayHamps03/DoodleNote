@@ -11,6 +11,11 @@ public class CommentViewModel
     public string Author { get; set; } = string.Empty;
     public string CommentText { get; set; } = string.Empty;
     public DateTime CreatedDate { get; set; }
+
+	public UserComment CreateComment(string cmntTxt, string userId, int noteId)
+	{
+		return CreateComment(cmntTxt, userId, noteId);
+	}
 }
 
 /// <summary>

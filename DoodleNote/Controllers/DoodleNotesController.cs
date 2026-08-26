@@ -168,12 +168,8 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 		if (userId == null)
 			return Unauthorized();
-		UserComment comment = new()
-		{
-			NoteId = noteId,
-			UserId = userId,
-			CommentText = commentText
-		};
+		// Use the CreateComment method to create a new comment instance
+		UserComment comment = new UserComment().CreateComment(commentText, userId, noteId);
 		_context.UserComments.Add(comment);
 		await _context.SaveChangesAsync();
 		return RedirectToAction(nameof(Details), new { id = noteId });
