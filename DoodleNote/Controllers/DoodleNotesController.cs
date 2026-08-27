@@ -70,6 +70,21 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 			.FirstOrDefaultAsync(n => n.NoteId == id);
 		if (note == null) return NotFound();
 
+		List<CommentViewModel> comments = await _context.UserComments
+			.AsNoTracking()
+			.Where(c => c.NoteId == note.NoteId)
+			.OrderByDescending(c => c.CommentId)
+			.Select(c => new CommentViewModel
+			{
+				CommentId = c.CommentId,
+				CommentText = c.CommentText,
+				Author = _context.Users
+					.Where(u => u.Id == c.UserId)
+					.Select(u => u.UserName)
+					.FirstOrDefault() ?? "Unknown"
+			})
+			.ToListAsync();
+
 		DoodleNoteDetailsViewModel viewModel = new()
 		{
 			NoteId = note.NoteId,
@@ -83,7 +98,8 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 			ImagePath = note.ImagePath,
 			LikeCount = await _context.UserLikes.CountAsync(l => l.NoteId == note.NoteId),
 			IsLikedByCurrentUser = await _context.UserLikes
-				.AnyAsync(l => l.NoteId == note.NoteId && l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+				.AnyAsync(l => l.NoteId == note.NoteId && l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)),
+			Comments = comments
 		};
 		return View(viewModel);
 	}
@@ -127,7 +143,7 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 	[HttpPost]
 	public async Task<IActionResult> ToggleNoteLike(NoteLikeViewModel model)
 	{
-		string UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		string? UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
 		UserLike? like = await _context.UserLikes
 			.FirstOrDefaultAsync(l => l.NoteId == model.NoteId && l.UserId == UserId);
@@ -145,6 +161,19 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		return NoContent();
 	}
 
+	public async Task<IActionResult> AddComment(int noteId, string commentText)
+	{
+		if (string.IsNullOrWhiteSpace(commentText))
+			return BadRequest("Comment text cannot be empty.");
+		string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		if (userId == null)
+			return Unauthorized();
+		// Use the CreateComment method to create a new comment instance
+		UserComment comment = new UserComment().CreateComment(commentText, userId, noteId);
+		_context.UserComments.Add(comment);
+		await _context.SaveChangesAsync();
+		return RedirectToAction(nameof(Details), new { id = noteId });
+	}
 
 	/// <summary>
 	/// Checks if a note exists by NoteId.

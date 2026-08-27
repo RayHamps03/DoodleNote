@@ -1,4 +1,22 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace DoodleNote.Models;
+
+/// <summary>
+/// A single comment rendered on the DoodleNote details view.
+/// </summary>
+public class CommentViewModel
+{
+    public int CommentId { get; set; }
+    public string Author { get; set; } = string.Empty;
+    public string CommentText { get; set; } = string.Empty;
+    public DateTime CreatedDate { get; set; }
+
+	public UserComment CreateComment(string cmntTxt, string userId, int noteId)
+	{
+		return CreateComment(cmntTxt, userId, noteId);
+	}
+}
 
 /// <summary>
 /// ViewModel for displaying detailed view of a single note.
@@ -13,4 +31,9 @@ public class DoodleNoteDetailsViewModel
     public string? ImagePath { get; set; }
     public int LikeCount { get; set; }
     public bool IsLikedByCurrentUser { get; set; }
+    public List<CommentViewModel> Comments { get; set; } = new();
+
+    [Required(ErrorMessage = "Comment cannot be empty.")]
+    [StringLength(300, ErrorMessage = "Comment cannot exceed 300 characters.")]
+    public string NewCommentText { get; set; } = string.Empty;
 }

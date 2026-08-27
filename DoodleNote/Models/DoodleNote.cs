@@ -31,12 +31,13 @@ public class DoodleNote
 	public string? Description { get; private set; }
 
 	public string? ImagePath { get; private set; }
-
-	public ICollection<UserLike>? Likes { get; set; }
-
 	public string? UserId { get; private set; }
+	public ICollection<UserLike>? Likes { get; set; }
 	
 	public ApplicationUser? User { get; private set; }
+
+	public ICollection<UserComment>? Comments { get; set; }
+
 
 	/// <summary>
 	/// Factory method to create a new DoodleNote with normalized date handling.
