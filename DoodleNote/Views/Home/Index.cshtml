@@ -2,6 +2,7 @@
 @using DoodleNote.Features.Admin.Constants
 @using DoodleNote.Features.Admin.Models
 @using DoodleNote.Features.Admin.Services
+@model IEnumerable<global::DoodleNote.Models.DoodleNote>
 @inject UserManager<ApplicationUser> UserManager
 @inject RoleService RoleService
 
@@ -20,6 +21,59 @@
 
     <div class="mt-4">
         <a href="@Url.Action("Index", "Doodle")" class="btn btn-success btn-lg" role="button">Create your first doodle</a>
+    </div>
+
+    <!-- Paginated Grid View of Notes -->
+    <div class="mt-5 text-start">
+        <h2 class="mb-4">Recent Doodles</h2>
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 border-top pt-3">
+            @foreach (var note in Model ?? Enumerable.Empty<global::DoodleNote.Models.DoodleNote>())
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(note.ImagePath))
+                        {
+                            <img src="@note.ImagePath" class="card-img-top" alt="@note.NoteTitle" style="object-fit: cover; height: 180px;">
+                        }
+                        else
+                        {
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+                                <span class="text-muted">No Image</span>
+                            </div>
+                        }
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title text-truncate">@note.NoteTitle</h5>
+                            <p class="card-text text-muted mb-auto">
+                                <small>By @(note.User?.UserName ?? "Unknown Author")</small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0 pb-3">
+                            <a href="@Url.Action("Details", "DoodleNotes", new { id = note.NoteId })" class="btn btn-outline-primary btn-sm w-100">View Doodle</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (ViewBag.TotalPages > 1)
+        {
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })">Previous</a>
+                    </li>
+                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                    {
+                        <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                        </li>
+                    }
+                    <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        }
     </div>
 
     @if (User?.Identity?.IsAuthenticated ?? false)

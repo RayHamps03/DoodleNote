@@ -1,6 +1,8 @@
 using DoodleNote.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using DoodleNote.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace DoodleNote.Controllers;
 
@@ -9,7 +11,28 @@ namespace DoodleNote.Controllers;
 /// </summary>
 public class HomeController : Controller
 {
-    public IActionResult Index() => View();
+    private readonly ApplicationDbContext _context;
+
+    public HomeController(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IActionResult> Index(int page = 1)
+    {
+        int pageSize = 12;
+        var notesQuery = _context.DoodleNotes
+            .Include(n => n.User)
+            .OrderByDescending(n => n.CreatedDate);
+            
+        var totalNotes = await notesQuery.CountAsync();
+        var notes = await notesQuery.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        ViewBag.CurrentPage = page;
+        ViewBag.TotalPages = (int)Math.Ceiling(totalNotes / (double)pageSize);
+
+        return View(notes);
+    }
 
     public IActionResult Privacy() => View();
 
