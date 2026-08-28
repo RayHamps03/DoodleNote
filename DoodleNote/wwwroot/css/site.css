@@ -41,6 +41,28 @@ html {
     -webkit-text-stroke: 0.065rem #851B3D;
 }
 
+.note {
+    color: #851B3D;
+    background-color: #252525;
+    -webkit-box-shadow: 5px 5px 15px -4px #000000;
+    box-shadow: 5px 5px 15px -4px #000000;
+    border: 1px solid #959595;
+    border-radius: 0px 0px 40px 0px;
+}
+
+.noteView {
+    color: #851B3D;
+    background-color: #181818;
+    border: 1px solid #851B3D;
+    border-radius: 40px 0px 40px 0px;
+}
+
+.noteView:hover {
+    color: #181818;
+    background-color: #851B3D;
+    border: 1px solid #181818;
+}
+
 html {
   position: relative;
   min-height: 100%;
