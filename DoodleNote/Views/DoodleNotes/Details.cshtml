@@ -1,23 +1,26 @@
 @model DoodleNoteDetailsViewModel
 @{
     ViewData["Title"] = Model.NoteTitle;
+    ViewData["BodyClass"] = "bg-black text-white";
+    ViewData["ContainerClass"] = "container-fluid p-0";
 }
 
-<h1>@Model.NoteTitle</h1>
-<div class="mb-2 text-muted">Created: @Model.CreatedDate.ToString("yyyy-MM-dd")</div>
+<div class="row justify-content-center m-0">
+    <div class="col-12 col-md-10 col-lg-8" style="background-color: #252525; border-left: 5px solid; border-right: 5px solid; border-image: linear-gradient(to bottom, #323232 0%, #C8C8C8 50%, #323232 100%) 1; padding: 15px; min-height: 100vh;">
+        <h1>@Model.NoteTitle</h1>
+        <div class="mb-2 text-muted">Created: @Model.CreatedDate.ToString("yyyy-MM-dd")</div>
 <div class="mb-2"><strong>Author:</strong> @Model.Author</div>
 
 @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
 {
-    <div class="mb-4">
-        <label class="form-label d-block">Doodle Image</label>
-        <img src="@Url.Content(Model.ImagePath)" alt="Doodle image for @Model.NoteTitle" class="img-fluid rounded border" style="max-height: 420px;" />
+    <div class="mb-4 text-center">
+        <img src="@Url.Content(Model.ImagePath)" alt="Doodle image for @Model.NoteTitle" class="img-fluid rounded border mx-auto d-block" style="max-height: 420px; background-color: #FFFFFF;" />
     </div>
 }
 
 <div class="mb-3">
     <label class="form-label">Description</label>
-    <div id="note-description" class="form-control" style="min-height: 80px; background: #f8f9fa;">@Model.Description</div>
+            <div id="note-description" class="form-control" style="min-height: 80px; background: linear-gradient(to top, #181818 0%, #1E1E1E 100%);">@Model.Description</div>
 </div>
 
 <div class="flex items-center gap-3">
@@ -53,6 +56,7 @@
             <textarea id="new-comment"
                       name="commentText"
                       class="form-control"
+                      style="background: linear-gradient(to top, #323232 0%, #787878 100%); color: #FFFFFF;"
                       rows="3"
                       maxlength="300"
                       placeholder="Write your comment..."
@@ -83,6 +87,8 @@
     }
 </section>
 
-<a class="btn btn-secondary" asp-action="Index">Back to List</a>
+            <a class="btn btn-secondary" asp-action="Index">Back to List</a>
+        </div>
+    </div>
 
 
