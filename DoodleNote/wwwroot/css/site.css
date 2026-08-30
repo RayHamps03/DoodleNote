@@ -44,6 +44,7 @@ html, body {
     -webkit-text-stroke: 0.065rem #851B3D;
 }
 
+/* Navigation and minor text display */
 .text-muted {
     color: #959595 !important;
 }
@@ -53,16 +54,16 @@ html, body {
     font-family: 'Iceberg';
 }
 
+/* Front page note display */
 .note {
     color: #851B3D;
     background-color: #252525;
     box-shadow: 9px 9px 5px 0px rgba(0,0,0,0.75);
-    -webkit-box-shadow: 9px 9px 5px 0px rgba(0,0,0,0.75);
-    -moz-box-shadow: 9px 9px 5px 0px rgba(0,0,0,0.75);
     border: 3px solid #959595;
     border-radius: 0px 0px 40px 0px;
 }
 
+/* Button displays */
 .btn {
     color: #851B3D;
     background: linear-gradient(to top, #181818 0%, #4F4F4F  100%);
@@ -79,6 +80,35 @@ html, body {
     border-radius: 15px 0px 40px 0px;
 }
 
+/* Pagination display */
+.page-item {
+    box-shadow: 9px 9px 5px 0px rgba(0,0,0,0.75);
+}
+
+.page-link {
+    background: linear-gradient(to top, #181818 0%, #4F4F4F 100%);
+    color: #851B3D;
+    border: 2px solid #959595;
+}
+
+.page-link:hover {
+    background: linear-gradient(to top, #851B3D 0%, #440E1F 100%);
+    color: #181818;
+}
+
+.page-item.disabled .page-link, .page-link.disabled {
+    background: linear-gradient(to top, #4F4F4F 0%, #737373 100%);
+    color: #252525;
+    border-color: #959595;
+}
+
+.page-item.active .page-link, .page-link.active {
+    border-color: #000000;
+    background: linear-gradient(to top, #851B3D 0%, #440E1F 100%);
+    color: #181818;
+}
+
+/* Border display */
 .defBorder {
     border-image: linear-gradient(to right, #323232 0%, #C8C8C8 50%, #323232 100%);
     border-style: solid;
