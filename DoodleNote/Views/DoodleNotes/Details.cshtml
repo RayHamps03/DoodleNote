@@ -59,12 +59,11 @@
                       style="background: linear-gradient(to top, #323232 0%, #787878 100%); color: #FFFFFF;"
                       rows="3"
                       maxlength="300"
-                      placeholder="Write your comment..."
-                      required></textarea>
+                      placeholder="Write your comment..."></textarea>
         </div>
         <div class="d-flex justify-content-between align-items-center">
             <small class="text-muted">Up to 300 characters.</small>
-            <button type="submit" class="btn btn-primary">Post comment</button>
+            <button type="submit" id="post-comment-btn" class="btn btn-primary disabled" disabled>Post comment</button>
         </div>
     </form>
 
@@ -87,8 +86,29 @@
     }
 </section>
 
-            <a class="btn btn-secondary" asp-action="Index">Back to List</a>
+            <a class="btn btn-secondary" asp-controller="Home" asp-action="Index">Back to List</a>
         </div>
     </div>
 
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const commentTextArea = document.getElementById('new-comment');
+            const postBtn = document.getElementById('post-comment-btn');
+
+            function toggleButton() {
+                if (commentTextArea.value.trim().length > 0) {
+                    postBtn.classList.remove('disabled');
+                    postBtn.removeAttribute('disabled');
+                } else {
+                    postBtn.classList.add('disabled');
+                    postBtn.setAttribute('disabled', 'disabled');
+                }
+            }
+
+            commentTextArea.addEventListener('input', toggleButton);
+            toggleButton(); // Check initial state
+        });
+    </script>
+}
 

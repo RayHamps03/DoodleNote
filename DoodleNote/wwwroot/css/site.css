@@ -76,6 +76,12 @@ html, body {
     border: 1px solid #181818;
 }
 
+.btn.disabled , .btn:disabled {
+    color: #252525;
+    background: linear-gradient(to top, #4F4F4F 0%, #737373 100%);
+    border-color: #959595;
+}
+
 .btnCurve {
     border-radius: 15px 0px 40px 0px;
 }
