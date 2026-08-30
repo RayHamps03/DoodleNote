@@ -65,13 +65,13 @@ html, body {
 
 .btn {
     color: #851B3D;
-    background: linear-gradient(to top, #181818 0%, #4F4F4F 100%);
+    background: linear-gradient(to top, #181818 0%, #4F4F4F  100%);
     border: 1px solid #851B3D;
 }
 
 .btn:hover {
     color: #181818;
-    background: linear-gradient(to top, #440E1F 0%, #851B3D 100%);
+    background: linear-gradient(to top, #851B3D 0%, #440E1F 100%);
     border: 1px solid #181818;
 }
 

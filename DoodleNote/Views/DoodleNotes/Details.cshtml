@@ -37,7 +37,7 @@
                 <span aria-hidden="true">&#9825;</span>
                 <span>Like</span>
             }
-            <span class="badge bg-secondary ms-1">@Model.LikeCount</span>
+            <span class="ms-1">@Model.LikeCount</span>
         </button>
     </form>
 </div>
@@ -45,7 +45,7 @@
 <section class="mt-4" aria-labelledby="comments-heading">
     <h2 id="comments-heading" class="h5 mb-3">
         Comments
-        <span class="badge bg-secondary ms-1">@Model.Comments.Count</span>
+        <span class=" ms-1">@Model.Comments.Count</span>
     </h2>
 
     <form asp-controller="DoodleNotes" asp-action="AddComment" method="post" class="mb-4">
