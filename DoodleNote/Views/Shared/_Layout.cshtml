@@ -4,23 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - DoodleNote</title>
-    <script>
-        (function () {
-            var storedTheme = localStorage.getItem("theme");
-            var theme = storedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-            document.documentElement.setAttribute("data-bs-theme", theme);
-        })();
-    </script>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/DoodleNote.styles.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Iceberg&family=New+Rocker&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="@(ViewData["BodyClass"] ?? "")">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3 bg-body-tertiary">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm mb-3" style="-webkit-box-shadow: 0 20px 24px #181818; background-color: #181818;">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DoodleNote</a>
+                <a class="navbar-brand logo" style="font-size: 2.5rem" asp-area="" asp-controller="Home" asp-action="Index">DoodleNote</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -48,13 +44,13 @@
             </div>
         </nav>
     </header>
-    <div class="container">
+    <div class="@(ViewData["ContainerClass"] ?? "container")">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted" style="background-color: #181818;">
         <div class="container">
             &copy; 2026 - DoodleNote - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>

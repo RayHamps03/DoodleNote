@@ -1,6 +1,7 @@
 using DoodleNote.Data;
 using DoodleNote.Features.DoodleNotes.Models;
 using DoodleNote.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
@@ -141,6 +142,7 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 	}
 
 	[HttpPost]
+	[Authorize]
 	public async Task<IActionResult> ToggleNoteLike(NoteLikeViewModel model)
 	{
 		string? UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -161,6 +163,7 @@ public class DoodleNotesController(ApplicationDbContext context) : Controller
 		return NoContent();
 	}
 
+	[Authorize]
 	public async Task<IActionResult> AddComment(int noteId, string commentText)
 	{
 		if (string.IsNullOrWhiteSpace(commentText))

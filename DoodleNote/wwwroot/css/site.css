@@ -2,12 +2,20 @@ html {
   font-size: 14px;
 }
 
+@font-face {
+    font-family: 'Horst Blackletter';
+    src: url('../fonts/Horst Blackletter Demo.ttf') format('truetype');
+}
+
 @media (min-width: 768px) {
   html {
     font-size: 16px;
   }
 }
 
+html, body {
+  overflow-x: hidden;
+}
 
 /* Brighter green for Create Note button */
 .btn-bright-green {
@@ -26,49 +34,110 @@ html {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
+/* Logo styling */
+.logo {
+    font-family: 'New Rocker';
+    background: #000000;
+    background: linear-gradient(to top, #E5E5E5 0%, #222222 50%, #000000 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 0.065rem #851B3D;
+}
+
+/* Navigation and minor text display */
+.text-muted {
+    color: #959595 !important;
+}
+
+.nav-link {
+    color: #851B3D !important;
+    font-family: 'Iceberg';
+}
+
+/* Front page note display */
+.note {
+    color: #851B3D;
+    background-color: #252525;
+    box-shadow: 9px 9px 5px 0px rgba(0,0,0,0.75);
+    border: 3px solid #959595;
+    border-radius: 0px 0px 40px 0px;
+}
+
+/* Button displays */
+.btn {
+    color: #851B3D;
+    background: linear-gradient(to top, #181818 0%, #4F4F4F  100%);
+    border: 1px solid #851B3D;
+}
+
+.btn:hover {
+    color: #181818;
+    background: linear-gradient(to top, #851B3D 0%, #440E1F 100%);
+    border: 1px solid #181818;
+}
+
+.btn.disabled , .btn:disabled {
+    color: #252525;
+    background: linear-gradient(to top, #4F4F4F 0%, #737373 100%);
+    border-color: #959595;
+}
+
+.btnCurve {
+    border-radius: 15px 0px 40px 0px;
+}
+
+/* Pagination display */
+.page-item {
+    box-shadow: 9px 9px 5px 0px rgba(0,0,0,0.75);
+}
+
+.page-link {
+    background: linear-gradient(to top, #181818 0%, #4F4F4F 100%);
+    color: #851B3D;
+    border: 2px solid #959595;
+}
+
+.page-link:hover {
+    background: linear-gradient(to top, #851B3D 0%, #440E1F 100%);
+    color: #181818;
+}
+
+.page-item.disabled .page-link, .page-link.disabled {
+    background: linear-gradient(to top, #4F4F4F 0%, #737373 100%);
+    color: #252525;
+    border-color: #959595;
+}
+
+.page-item.active .page-link, .page-link.active {
+    border-color: #000000;
+    background: linear-gradient(to top, #851B3D 0%, #440E1F 100%);
+    color: #181818;
+}
+
+/* Border display */
+.defBorder {
+    border-image: linear-gradient(to right, #323232 0%, #C8C8C8 50%, #323232 100%);
+    border-style: solid;
+}
+
 html {
   position: relative;
   min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    font-family: 'Electrolize', sans-serif;
+    background-color: #252525;
+    color: #ffffff;
 }
 
-#themeToggleButton {
-  min-width: 92px;
-  background-color: #000;
-  color: #fff;
-  border-color: #000;
+header, footer {
+    background-color: #181818;
 }
 
-#themeToggleButton:hover,
-#themeToggleButton:focus {
-  background-color: #111;
-  color: #fff;
-  border-color: #111;
-}
-
-html[data-bs-theme="dark"] body {
-  background-color: var(--bs-body-bg);
-  color: var(--bs-body-color);
-}
-
-html[data-bs-theme="dark"] #themeToggleButton {
-  background-color: #fff;
-  color: #000;
-  border-color: #fff;
-}
-
-html[data-bs-theme="dark"] #themeToggleButton:hover,
-html[data-bs-theme="dark"] #themeToggleButton:focus {
-  background-color: #f2f2f2;
-  color: #000;
-  border-color: #f2f2f2;
-}
-
-html[data-bs-theme="dark"] .footer {
-  border-top-color: var(--bs-border-color) !important;
+h1, h2 {
+    font-family:'Iceberg';
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
